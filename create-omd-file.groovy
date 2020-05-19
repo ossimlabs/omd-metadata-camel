@@ -3,9 +3,6 @@ import groovy.json.JsonSlurper
 def data
 def omdMap = [provider: "mission_id", address: "address"]
 
-def sqs_queue_name = 'LidarData'
-def s3_bucket_name_to = 'potree-test-data'
-def s3_bucket_name_from = 'potree-test-data'
 def processed_directory_name = 'processed'
 def fileName = ''
 def suffixToChange = '_metadata.json'
@@ -17,7 +14,7 @@ beans {
 }
 
 // Grab files from s3 bucket updon SQS message and copy into processed directory.
-from("aws-sqs://{{SQS_QUEUE_NAME}}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
+from("aws-sqs://${System.getenv('SQS_QUEUE_NAME')}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
     .unmarshal().json()
     .process { exchange ->
 
@@ -35,10 +32,10 @@ from("aws-sqs://{{SQS_QUEUE_NAME}}?amazonSQSClient=#client&delay=1000&maxMessage
         exchange.getOut().setBody(body)
         exchange.getOut().setHeaders(exchange.getIn().getHeaders())
 
-        // The key (file name) that will be copied from the S3_BUCKET_NAME_FROM
+        // The key (file name) that will be copied from the S3_BUCKET_NAME
         exchange.in.setHeader("CamelAwsS3Key", "${data.objectKey}")
         // The bucket we are copying to
-        exchange.in.setHeader("CamelAwsS3BucketDestinationName", "${s3_bucket_name_to}")
+        exchange.in.setHeader("CamelAwsS3BucketDestinationName", "${System.getenv('S3_BUCKET_NAME')}")
         // The key (file name) that will be used for the copied object
         exchange.in.setHeader("CamelAwsS3DestinationKey",  "${processed_directory_name}/${objectKeyName}")
 
@@ -46,10 +43,10 @@ from("aws-sqs://{{SQS_QUEUE_NAME}}?amazonSQSClient=#client&delay=1000&maxMessage
         println "SQS message received. Copying ${data.objectKey} into ${processed_directory_name}"
         println "#"*80
     }
-    .to("aws-s3://{{S3_BUCKET_NAME_FROM}}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+    .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
 
 // Get files from processed directory and copy into local pod.
-from("aws-s3://{{S3_BUCKET_NAME_TO}}?useIAMCredentials=true&prefix=${processed_directory_name}/")
+from("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&prefix=${processed_directory_name}/")
     .process { exchange ->
         Date date = new Date()
         String fileDate = date.format("yyyy-MM-dd")
@@ -91,7 +88,7 @@ from("file:///tmp/processed/")
         // exchange.getIn().setHeader("CamelAwsS3ContentLength", simple("${in.header.CamelFileLength}"))
         exchange.getIn().setHeader("CamelAwsS3Key", "${fileName}");
     }
-    .to("aws-s3://{{S3_BUCKET_NAME_TO}}?useIAMCredentials=true")
+    .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true")
 
 
 
