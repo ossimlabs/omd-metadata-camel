@@ -16,6 +16,6 @@ Found in `s3.properties` file
 1. Log in to Openshift: `oc login`
 2. Supply Openshift login information
 3. Change projects: `oc project <YOUR_OPENSHIFT_PROJECT>`
-4. Run and deploy the component: ```kamel run -d mvn:org.codehaus.groovy:groovy-json:2.5.9 -d mvn:org.codehaus.groovy:groovy-dateutil:2.5.9 create-omd-file.groovy --property-file s3.properties --dev```
+4. Run and deploy the component: ```kamel run -d mvn:org.codehaus.groovy:groovy-json:2.5.9 -d mvn:org.codehaus.groovy:groovy-dateutil:2.5.9 -e SQS_QUEUE_NAME=<YOUR_QUEUE_NAME> -e S3_BUCKET_NAME=<YOUR_BUCKET_NAME> create-omd-file.groovy --property-file s3.properties --dev```
  
  Note: _The dependencies in the run command above are needed for the Groovy JsonSlurper and Date formatting in the DSL._
