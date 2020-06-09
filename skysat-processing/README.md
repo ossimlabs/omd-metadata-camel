@@ -3,6 +3,17 @@ Micronaut Deployment of Apache Camel for processing incoming SkySat data.
 
 ---
 
+### Routes
+
+1. Copy zip file into camel watched directory
+2. Copy zip file to local pod directory *(temporary directory)*
+3. Unzip file and copy contents back into s3
+4. Extract metadata json file into extracted directory *(temporary directory)*
+5. Generate processing instructions from json file and send to SQS
+6. Pull and carry out instructions from SQS message body (sort files and create omd)
+
+---
+
 ### Environment Variables
 
 Variable     | Description
@@ -17,12 +28,3 @@ Variable     | Description
 `app.local.directory.zip` | *Local directory where to copy s3 zip file in the local pod.*
 
 ---
-
-### Routes
-
-1. Copy zip file into camel watched directory
-2. Copy zip file to local pod directory *(temporary directory)*
-3. Unzip file and copy contents back into s3
-4. Extract metadata json file into extracted directory *(temporary directory)*
-5. Generate processing instructions from json file and send to SQS
-6. Pull and carry out instructions from SQS message body (sort files and create omd)
