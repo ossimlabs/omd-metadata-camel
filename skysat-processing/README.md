@@ -21,6 +21,7 @@ Variable     | Description
 `app.sqs.extractedJsonQueue` | *SQS queue notifying the creation of json into s3.*
 `app.sqs.instructionQueue` | *SQS queue messages with processing instructions.*
 `app.sqs.zipQueue` | *SQS queue notifying the PUT of a zip file in s3.*
+`app.sqs.errorQueue` | *SQS queue containing error messages to be logged*
 `app.s3.bucket.to` | *S3 bucket to place files.*
 `app.s3.directory.tempZip` | *S3 directory where the zip file will be moved to in s3.*
 `app.s3.directory.unzipped` | *S3 directory where unzipped files will be created.*
