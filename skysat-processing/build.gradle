@@ -1,0 +1,104 @@
+plugins {
+    id 'com.google.cloud.tools.jib' version '2.3.0'
+    id "groovy"
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+    id "application"
+}
+
+version "0.1"
+group "skysat.processing"
+
+repositories {
+    mavenCentral()
+    maven { url "https://jcenter.bintray.com" }
+}
+
+configurations {
+    // for dependencies that are needed for development only
+    developmentOnly 
+}
+
+dependencies {
+
+    compile group: 'org.apache.camel', name: 'camel-core', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'camel-aws-sqs', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'camel-aws-s3', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'camel-jackson', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'camel-http', version: '3.3.0'
+    compile group: 'org.apache.camel', name: 'camel-zipfile', version: '3.3.0'
+
+    compile group: 'org.codehaus.groovy', name: 'groovy-json', version: '2.5.8'
+    compile group: 'org.codehaus.groovy', name: 'groovy-dateutil', version: '2.5.8'
+
+    annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
+    compileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
+    compileOnly "io.micronaut:micronaut-inject-groovy"
+    implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
+    implementation "io.micronaut:micronaut-management"
+    implementation "io.micronaut:micronaut-http-client"
+    implementation "io.micronaut.kubernetes:micronaut-kubernetes-discovery-client"
+    implementation "io.micronaut:micronaut-http-server-netty"
+    implementation "io.micronaut:micronaut-runtime-groovy"
+    implementation "io.micronaut:micronaut-validation"
+    runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+    testCompileOnly platform("io.micronaut:micronaut-bom:$micronautVersion")
+    testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
+    testImplementation("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
+    testImplementation "io.micronaut:micronaut-inject-groovy"
+    testImplementation "io.micronaut.test:micronaut-test-spock"
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+}
+
+test.classpath += configurations.developmentOnly
+
+mainClassName = "skysat.processing.Application"
+
+jib {
+    from {
+        image = "adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim"
+    }
+    to {
+        image = 'nexus-docker-public-hosted.ossim.io/skysat-processing'
+    }
+    extraDirectories {
+        paths {
+            path {
+                from = file('src/main/jib')
+                into = "/app"                
+            }
+            path {
+                from = file('src/main/jib')
+                into = "/app"                
+            }
+        }
+        permissions = [
+            "/app/run_java.sh": "755"
+        ]
+    }
+    containerizingMode = 'packaged'
+    container {
+        environment = [
+            JAVA_APP_DIR: '/app', 
+            JAVA_MAIN_CLASS: mainClassName,
+            JAVA_CLASSPATH: '/app/classpath/*:/app/libs/*'
+        ]
+        ports = ['8080']    
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        entrypoint = ['/app/run_java.sh']
+    }        
+} 
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+tasks.withType(JavaExec) {
+    classpath += configurations.developmentOnly
+    jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+}

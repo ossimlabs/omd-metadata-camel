@@ -1,103 +1,211 @@
+package skysat.processing
+
+import io.micronaut.runtime.Micronaut
+import io.micronaut.runtime.event.annotation.EventListener
+import io.micronaut.runtime.server.event.ServerStartupEvent
+import io.micronaut.scheduling.annotation.Async
+
+import groovy.transform.CompileStatic
+import org.apache.camel.CamelContext
+import org.apache.camel.impl.DefaultCamelContext
+import org.apache.camel.support.SimpleRegistry
+
+import org.apache.camel.builder.RouteBuilder
+
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 import groovy.json.JsonSlurper
-def data
-def omdMap = [provider: "mission_id", address: "address"]
-def omdProviderNamingCaseMap = [skysat: "SkySat", blacksky: "BlackSky"]
+import groovy.json.JsonOutput
 
-def processed_directory_name = 'processed'
-def fileName = ''
-def suffixToChange = '_metadata.json'
-def dir = ''
-def omdFormattedName = ''
+import io.micronaut.context.annotation.Value
 
-beans {
-    client = AmazonSQSClientBuilder.defaultClient()
-}
+import org.apache.camel.Exchange
+import org.apache.camel.Handler
+import org.apache.camel.Message
 
-// Grab files from s3 bucket updon SQS message and copy into processed directory.
-from("aws-sqs://${System.getenv('SQS_QUEUE_NAME')}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
-    .unmarshal().json()
-    .process { exchange ->
+class Application {
 
-        def jsonSlurper = new JsonSlurper().parseText(exchange.in.body.Message)
+    @Value('${app.sqs.queue}')
+    String sqsQueueName
 
-        data = [
-            bucketName: jsonSlurper.Records[0].s3.bucket.name,
-            objectKey: jsonSlurper.Records[0].s3.object.key]
+    @Value('${app.s3.bucket.to}')
+    String s3BucketNameTo
 
-        List<String> objectKeyItems = data.objectKey.split("/")
+    @Value('${app.sqs.instructionQueue}')
+    String instructionQueue
+
+    @Value('${app.suffixes}')
+    String[] suffixes
+
+    @Value('${app.uploadDirectory}')
+    String uploadDirectory
+
+    String imageDirectory = null 
+
+    def omdMap = [provider: "mission_id"]
+    def omdProviderNamingCaseMap = [skysat: "SkySat", blacksky: "BlackSky"]
+
+    @EventListener
+    @Async
+    public void onStartup(ServerStartupEvent event) {
+        SimpleRegistry registry = new SimpleRegistry()
         
-        String objectKeyName = objectKeyItems.last()
+        registry.bind('client', AmazonSQSClientBuilder.defaultClient())
 
-        String body = exchange.getIn().getBody(String.class);
-        exchange.getOut().setBody(body)
-        exchange.getOut().setHeaders(exchange.getIn().getHeaders())
+        CamelContext context = new DefaultCamelContext(registry)
 
-        // The key (file name) that will be copied from the S3_BUCKET_NAME
-        exchange.in.setHeader("CamelAwsS3Key", "${data.objectKey}")
-        // The bucket we are copying to
-        exchange.in.setHeader("CamelAwsS3BucketDestinationName", "${System.getenv('S3_BUCKET_NAME')}")
-        // The key (file name) that will be used for the copied object
-        exchange.in.setHeader("CamelAwsS3DestinationKey",  "${processed_directory_name}/${objectKeyName}")
+        context.addRoutes(new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                if (false) {
+                from('timer:tick?period=3000')
+                        .setBody().constant("Hello world from Micronaut K8S Camel")
+                    .to('log:info')
+                }
+                else {
+                from("aws-sqs://${sqsQueueName}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
+                    .unmarshal().json()
+                    .process { exchange ->
+                        def jsonSlurper = new JsonSlurper().parseText(exchange.in.body.Message)
+                        def data = [
+                            bucketName: jsonSlurper.Records[0].s3.bucket.name,
+                            objectKey: jsonSlurper.Records[0].s3.object.key]
 
-        println "#"*80
-        println "SQS message received. Copying ${data.objectKey} into ${processed_directory_name}"
-        println "#"*80
+                        List<String> objectKeyItems = data.objectKey.split("/")
+
+                        String objectKeyName = objectKeyItems.last()
+                        imageDirectory = getImageDirectory(objectKeyName, suffixes);
+                        String body = exchange.getIn().getBody(String.class);
+                        exchange.getOut().setBody(body)
+                        exchange.getOut().setHeaders(exchange.getIn().getHeaders())
+
+                        exchange.in.setHeader("CamelAwsS3Key", "${data.objectKey}")
+                        exchange.in.setHeader("CamelAwsS3BucketDestinationName", "${s3BucketNameTo}")
+                        exchange.in.setHeader("CamelAwsS3DestinationKey",  "processed/${objectKeyName}")
+                    }
+                    .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+
+                    from("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&prefix=processed/")
+                        .process { exchange ->
+                            def message = getMessage(exchange)
+
+                            exchange.getOut().setHeaders(exchange.getIn().getHeaders())
+                            exchange.getOut().setBody(message.toString())
+                        }
+                        .to("aws-sqs://${instructionQueue}?amazonSQSClient=#client&defaultVisibilityTimeout=2")
+
+                    from("aws-sqs://${instructionQueue}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
+                        .split(method(JsonArraySplitter.class))
+                        .process { exchange ->
+                            String body = exchange.getIn().getBody(String.class)
+                            body = formatMessageToJsonParsableString(body)
+                            def json = new JsonSlurper().parseText(body)
+                            String key = json.key
+                            String destKey = json.destKey
+                            exchange.in.setHeader("CamelAwsS3DestinationKey",  "${destKey}")
+                            exchange.in.setHeader("CamelAwsS3BucketDestinationName", "${s3BucketNameTo}")
+
+                            if (key == "omd") {
+                                exchange.in.setHeader("CamelAwsS3Key", "${destKey}")
+                                exchange.in.setBody(json.body)
+                            } else
+                                exchange.in.setHeader("CamelAwsS3Key", "${key}")
+                        }
+                        .choice()
+                            .when(body().contains("mission"))
+                            .toD("aws-s3://${s3BucketNameTo}?useIAMCredentials=true")
+                        .otherwise()
+                            .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+                        .end()
+                }
+            }
+        });
+
+        context.start();
     }
-    .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
 
-// Get files from processed directory and copy into local pod.
-from("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&prefix=${processed_directory_name}/")
-    .process { exchange ->
-        Date date = new Date()
-        String fileDate = date.format("yyyy-MM-dd")
-        String body = exchange.getIn().getBody(String.class);
-
+    private def getMessage(exchange) {
+        String body = exchange.getIn().getBody(String.class)
         def json = new JsonSlurper().parseText(body)
-        def fileBodyString = ''
+        String omdBody = getNewFileBodyString(json, body)
+        println "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        String omdDestKey = getDestinationKey(json, ".omd")
+        def message = []
+        suffixes.eachWithIndex { suffix, index ->
+            def key = uploadDirectory + json.id + suffix
+            def destKey = getDestinationKey(json, suffix)
+            def val = [key: key, destKey: destKey, body: ""]
+            message.add(val)
+        }
+        def val = [key: "omd", destKey: omdDestKey, body: omdBody]
+        message.add(val)
+        def messageAsJson = JsonOutput.toJson(message)
+        return messageAsJson
+    }
 
-        int endSuffixIndex = data.objectKey.length() - suffixToChange.length()
 
-        omdFormattedName = data.objectKey.substring(0, endSuffixIndex) + '.omd'
+    private String formatMessageToJsonParsableString(body) {
+        body = body.replaceAll(/\{/, /\{\"/)
+        body = body.replaceAll(/\}/, /\"\}/)
+        body = body.replaceAll(/=/, /\":\"/)
+        body = body.replaceAll(/,\ /, /\",\"/)
+        return body
+    }
 
+    private String getInstructionJsonString(key, destKey, body) {
+        return "{\"key\":\"${key}\",\"destKey\":\"${destKey}\",\"body\":\"${body}\"}"
+    }
+
+    def getDestinationKey(json, String suffix) {
+        String filename = json.id + suffix;
+        String acquisition_date = json.properties.acquired.replaceAll(":", "-");
+        return "${acquisition_date}/${json.id}/${filename}"
+    }
+
+    public String getImageDirectory(String key, String[] suffixes) {
+        for (String suffix in suffixes) {
+            if (key.contains(suffix))
+                return key.substring(0, key.length() - suffix.length())
+        }
+        return 'lonely-files'
+    }
+
+    def getNewFileBodyString(json, body) {
+        String fileBodyString = ''
         omdMap.each{ entry ->
-            String key = entry.key + '":'
+            String key = entry.key
             if (body.contains(key)) {
                 String keyVal = getChangedNamingCase(json.properties[entry.key], omdProviderNamingCaseMap)
                 fileBodyString += entry.value + ": " + keyVal + "\n"
             }
         }
-
-        println "#"*80
-        println "Copying " + omdFormattedName + " file to local pod at /tmp/" + processed_directory_name
-        println "#"*80
-
-        fileName = omdFormattedName
-    
-        exchange.getOut().setHeaders(exchange.getIn().getHeaders())
-        exchange.getOut().setHeader(Exchange.FILE_NAME, simple("${processed_directory_name}/${omdFormattedName}"))
-        exchange.getOut().setBody(fileBodyString)
+        return fileBodyString
     }
-    .toD("file:///tmp/")
 
-// Copy file back into the s3 bucket.
-from("file:///tmp/processed/")
-    .process { exchange ->
-        println "#"*80
-        println "Grabbed file: " + fileName
-        println "Copying back into s3 bucket"
-        println "#"*80
-        // exchange.getIn().setHeader("CamelAwsS3ContentLength", simple("${in.header.CamelFileLength}"))
-        exchange.getIn().setHeader("CamelAwsS3Key", "${fileName}");
+    def getChangedNamingCase(key, Map caseMap) {
+        if (caseMap.containsKey(key.toLowerCase()))
+            return caseMap.get(key.toLowerCase())
+        else
+            return key
     }
-    .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true")
 
-def getChangedNamingCase(key, Map caseMap) {
-    if (caseMap.containsKey(key))
-        return caseMap[key].value
-    else
-        return key
+    static void main(String[] args) {
+        Micronaut.run(Application)
+    }
 }
 
+public class JsonArraySplitter {
 
+    @Handler
+    public String[] processMessage(Exchange exchange) {
+        def messageList = [];
+        def message = exchange.getIn();
+        def msg = message.getBody(String.class);
+        def json = new JsonSlurper().parseText(msg)
 
+        for (def instruction in json)
+            messageList.add(instruction.toString());
+
+        return messageList;
+    }
+
+}

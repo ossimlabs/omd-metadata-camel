@@ -2,6 +2,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 import groovy.json.JsonSlurper
 def data
 def omdMap = [provider: "mission_id", address: "address"]
+def omdProviderNamingCaseMap = [skysat: "SkySat", blacksky: "BlackSky"]
 
 def processed_directory_name = 'processed'
 def fileName = ''
@@ -43,7 +44,7 @@ from("aws-sqs://${System.getenv('SQS_QUEUE_NAME')}?amazonSQSClient=#client&delay
         println "SQS message received. Copying ${data.objectKey} into ${processed_directory_name}"
         println "#"*80
     }
-    .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+    .to("log:info")
 
 // Get files from processed directory and copy into local pod.
 from("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&prefix=${processed_directory_name}/")
@@ -62,7 +63,8 @@ from("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true&prefix=
         omdMap.each{ entry ->
             String key = entry.key + '":'
             if (body.contains(key)) {
-                fileBodyString += entry.value + ": " + json.properties[entry.key] + "\n"
+                String keyVal = getChangedNamingCase(json.properties[entry.key], omdProviderNamingCaseMap)
+                fileBodyString += entry.value + ": " + keyVal + "\n"
             }
         }
 
@@ -89,6 +91,13 @@ from("file:///tmp/processed/")
         exchange.getIn().setHeader("CamelAwsS3Key", "${fileName}");
     }
     .to("aws-s3://${System.getenv('S3_BUCKET_NAME')}?useIAMCredentials=true")
+
+def getChangedNamingCase(key, Map caseMap) {
+    if (caseMap.containsKey(key.toLowerCase()))
+        return caseMap[key].value
+    else
+        return key
+}
 
 
 

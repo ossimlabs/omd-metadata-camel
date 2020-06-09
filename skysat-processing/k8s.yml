@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "skysat-processing"
+spec:
+  selector:
+    matchLabels:
+      app: "skysat-processing"
+  template:
+    metadata:
+      labels:
+        app: "skysat-processing"
+    spec:
+      containers:
+        - name: "skysat-processing"
+          image: "nexus-docker-public-hosted.ossim.io/skysat-processing"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "skysat-processing"
+spec:
+  selector:
+    app: "skysat-processing"
+  type: LoadBalancer
+  ports:
+    - protocol: "TCP"
+      port: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skysat-processing
+  labels:
+    app: skysat-processing
+data:
+  application.yaml: |-
+    app:
+      sqs:
+        queue: SkySatCamelQueue
+        instructionQueue: SkySatProcessInstructions
+        zipQueue: SkySatZipQueue
+      s3:
+        bucket:
+          to: ben-skysat
+        path:
+          uploadedZip: uploaded-zip
+      uploadDirectory: uploaded/
+      extractedJsonDirectory: extracted
+      tmp:
+        path:
+          zip: zip-files
+      suffixes: [ '_basic_analytic_dn.ntf','_basic_analytic_dn_RPC.TXT','_basic_analytic_dnthumb.jpg','_basic_panchromatic_dn.ntf','_basic_panchromatic_dn_RPC.TXT','_basic_panchromatic_dnthumb.jpg','_metadata.json']
