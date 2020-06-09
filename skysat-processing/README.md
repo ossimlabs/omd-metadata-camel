@@ -17,3 +17,13 @@ Variable     | Description
 `app.local.directory.zip` | *Local directory where to copy s3 zip file in the local pod.*
 
 ---
+
+### Routes
+
+Routes
+- Copy zip file into camel watched directory
+- Copy zip file to local pod directory *(temporary directory)*
+- Unzip file and copy contents back into s3
+- Extract metadata json file into extracted directory *(temporary directory)*
+- Generate processing instructions from json file and send to SQS
+- Pull and carry out instructions from SQS message body (sort files and create omd)
