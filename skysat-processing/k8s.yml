@@ -56,12 +56,13 @@ data:
         extractedJsonQueue: SkySatCamelQueue
         instructionQueue: SkySatProcessInstructions
         zipQueue: SkySatZipQueue
+        errorQueue: SkySatErrorQueue
       s3:
         bucket:
           to: ben-skysat
         directory:
           tempZip: uploaded-zip
-          unzipped: uploaded/
+          unzipped: uploaded
           extractedJson: extracted
       local:
         directory:

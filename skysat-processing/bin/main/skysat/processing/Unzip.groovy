@@ -85,7 +85,7 @@ class Unzip extends RouteBuilder {
                 def fullPath = exchange.getIn().getHeaders().CamelFileName;
                 List<String> pathItems = fullPath.split("/")
                 String filename = pathItems.last()
-                filename = unzippedDirectory + filename
+                filename = unzippedDirectory + "/" + filename
 
                 ExchangeHandler.setS3(exchange, filename, filename, s3BucketNameTo, s3BucketNameTo, '')
 

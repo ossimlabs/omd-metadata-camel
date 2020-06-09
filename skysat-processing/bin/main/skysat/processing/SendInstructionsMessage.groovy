@@ -20,6 +20,9 @@ class SendInstructionsMessage extends RouteBuilder {
     @Value('${app.sqs.instructionQueue}')
     String instructionQueue
 
+    @Value('${app.sqs.errorQueue}')
+    String errorQueue
+
     @Value('${app.s3.directory.unzipped}')
     String unzippedDirectory
 
@@ -45,19 +48,20 @@ class SendInstructionsMessage extends RouteBuilder {
                 List<String> objectKeyItems = exchange.getIn().getHeaders().CamelAwsS3Key.split("/")
                 String objectKeyName = objectKeyItems.last()
 
-                if (message != null) {
+                if (!exitFlag) {
                     ExchangeHandler.setSQS(exchange, message.toString())
                     logger = new Logger(routeName, exchange, s3BucketNameTo, "aws-s3", instructionQueue, "aws-sqs", '')
                     logger.logRoute()
                 } else {
-                    String destKey = ExchangeHandler.getErrorLogKey(objectKeyName)
-                    ExchangeHandler.setS3Copy(exchange, key, destKey, s3BucketNameTo, s3BucketNameTo)
-                    exchange.getOut().setBody("exitflag")
+                    String filename = objectKeyName + ".error.txt"
+                    ErrorMessage errorMessage = ErrorLogger.getErrorMessage("JSON", filename, routeName, message)
+                    String msg = JsonOutput.toJson(errorMessage).toString()
+                    ExchangeHandler.setSQS(exchange, msg)
                 }
             }
             .choice()
-                .when(body().contains("exitflag"))
-                    .toD("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+                .when(body().contains("ERROR"))
+                    .to("aws-sqs://${errorQueue}?amazonSQSClient=#client&defaultVisibilityTimeout=2")
                 .otherwise()
                     .to("aws-sqs://${instructionQueue}?amazonSQSClient=#client&defaultVisibilityTimeout=2")
     }
@@ -68,22 +72,24 @@ class SendInstructionsMessage extends RouteBuilder {
         try {
             json = new JsonSlurper().parseText(body)
         } catch (Exception ex) {
-            ErrorLogger.logException(ex, "Error while parsing json file.", routeName, "getMessage")
+            String message = "Error while parsing json file."
+            ErrorLogger.logException(ex, message, routeName, "getMessage")
             exitFlag = true;
-            return null;
+            return message;
         }
 
         if (json.id == null) {
+            String message = "json file does not contain field [id]"
             ErrorLogger.logError("json file does not contain field [id]", routeName, "getMessage")
             exitFlag = true;
-            return null;
+            return message;
         }
 
         String omdBody = getNewFileBodyString(json, body)
         String omdDestKey = getDestinationKey(json, ".omd")
         def message = []
         suffixes.eachWithIndex { suffix, index ->
-            def key = unzippedDirectory + json.id + suffix
+            def key = unzippedDirectory + "/" + json.id + suffix
             def destKey = getDestinationKey(json, suffix)
             def val = [key: key, destKey: destKey, body: ""]
             message.add(val)

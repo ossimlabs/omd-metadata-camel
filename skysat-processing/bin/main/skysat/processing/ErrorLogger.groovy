@@ -49,4 +49,26 @@ class ErrorLogger {
             println ConsoleColors.RED + e
         println "-"*printDividerLength
     }
+
+    public static ErrorMessage getErrorMessage(title, filename, route, body) {
+        return new ErrorMessage(title, filename, route, body)
+    }
+}
+
+class ErrorMessage {
+    String title
+    String date
+    String filename
+    String route
+    String body
+
+    public ErrorMessage(title, filename, route, body) {
+        Date date = new Date()
+        String fileDate = date.format("yyyy-MM-dd-hh:mm")
+        this.title = title + " ERROR"
+        this.date = date
+        this.filename = filename
+        this.route = route
+        this.body = body
+    }
 }

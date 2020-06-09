@@ -17,13 +17,19 @@ class Application {
     ExtractJson extractJson
     SendInstructionsMessage sendInstructionsMessage
     SortAndCreateOmd sortAndCreateOmd
+    ErrorLogRoute errorLogRoute
 
-    Application(Unzip unzip, ExtractJson extractJson, SendInstructionsMessage sendInstructionsMessage, SortAndCreateOmd sortAndCreateOmd)
+    Application(Unzip unzip, 
+                ExtractJson extractJson, 
+                SendInstructionsMessage sendInstructionsMessage, 
+                SortAndCreateOmd sortAndCreateOmd,
+                ErrorLogRoute errorLogRoute)
     {
         this.unzip = unzip
         this.extractJson = extractJson
         this.sendInstructionsMessage = sendInstructionsMessage
         this.sortAndCreateOmd = sortAndCreateOmd
+        this.errorLogRoute = errorLogRoute
     }
 
     @EventListener
@@ -36,6 +42,7 @@ class Application {
         context.addRoutes(extractJson)
         context.addRoutes(sendInstructionsMessage)
         context.addRoutes(sortAndCreateOmd)
+        context.addRoutes(errorLogRoute)
         context.start();
     }
 
