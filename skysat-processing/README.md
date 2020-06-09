@@ -1,6 +1,7 @@
 # SkySat Processing
----
 Micronaut Deployment of Apache Camel for processing incoming SkySat data.
+
+---
 
 ### Environment Variables
 
