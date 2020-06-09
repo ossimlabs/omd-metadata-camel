@@ -20,7 +20,6 @@ Variable     | Description
 
 ### Routes
 
-Routes
 - Copy zip file into camel watched directory
 - Copy zip file to local pod directory *(temporary directory)*
 - Unzip file and copy contents back into s3
