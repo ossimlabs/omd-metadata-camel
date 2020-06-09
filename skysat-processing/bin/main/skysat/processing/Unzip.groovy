@@ -25,17 +25,17 @@ class Unzip extends RouteBuilder {
     String s3BucketNameTo
 
     // Directory where unzipped files will be created.
-    @Value('${app.uploadDirectory}') 
-    String uploadDirectory
+    @Value('${app.s3.directory.unzipped}') 
+    String unzippedDirectory
 
     // Directory where the zip file will be moved to in s3.
     // Also where route 2 will look for zip files.
-    @Value('${app.s3.path.uploadedZip}')
-    String uploadedZip                  
+    @Value('${app.s3.directory.tempZip}')
+    String tempZipDirectory                  
 
     // Directory where to copy s3 zip file in the local pod.
-    @Value('${app.tmp.path.zip}')
-    String zipPath
+    @Value('${app.local.directory.zip}')
+    String localZipDirectory
 
     @Override
     public void configure() throws Exception 
@@ -55,7 +55,7 @@ class Unzip extends RouteBuilder {
                     objectKey: jsonSlurper.Records[0].s3.object.key]
 
                 List<String> objectKeyItems = data.objectKey.split("/")
-                String objectKeyName = uploadedZip + "/" + objectKeyItems.last()
+                String objectKeyName = tempZipDirectory + "/" + objectKeyItems.last()
 
                 ExchangeHandler.setS3Copy(exchange, data.objectKey, objectKeyName, s3BucketNameTo, s3BucketNameTo)
 
@@ -64,12 +64,12 @@ class Unzip extends RouteBuilder {
             }
             .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
 
-        from("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&prefix=${uploadedZip}/")
+        from("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&prefix=${tempZipDirectory}/")
             .process { exchange -> 
                 def routeName = "Copy zip file to local file directory"
                 String fullPath = exchange.getIn().getHeaders().CamelAwsS3Key;
                 List<String> pathItems = fullPath.split("/")
-                String filename = zipPath + "/" + pathItems.last()
+                String filename = localZipDirectory + "/" + pathItems.last()
 
                 ExchangeHandler.setFile(exchange, filename)
                 
@@ -78,18 +78,18 @@ class Unzip extends RouteBuilder {
             }
             .toD("file:///tmp/")
 
-        from("file:///tmp/${zipPath}/")
+        from("file:///tmp/${localZipDirectory}/")
             .split(new ZipSplitter()).streaming()
             .process { exchange ->
                 def routeName = "Unzip file into s3 bucket"
                 def fullPath = exchange.getIn().getHeaders().CamelFileName;
                 List<String> pathItems = fullPath.split("/")
                 String filename = pathItems.last()
-                filename = uploadDirectory + filename
+                filename = unzippedDirectory + filename
 
                 ExchangeHandler.setS3(exchange, filename, filename, s3BucketNameTo, s3BucketNameTo, '')
 
-                logger = new Logger(routeName, exchange, zipPath, "file", s3BucketNameTo, "aws-s3", '')
+                logger = new Logger(routeName, exchange, localZipDirectory, "file", s3BucketNameTo, "aws-s3", '')
                 logger.logRoute()
             }
             .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true")

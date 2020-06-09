@@ -53,17 +53,17 @@ data:
   application.yaml: |-
     app:
       sqs:
-        queue: SkySatCamelQueue
+        extractedJsonQueue: SkySatCamelQueue
         instructionQueue: SkySatProcessInstructions
         zipQueue: SkySatZipQueue
       s3:
         bucket:
           to: ben-skysat
-        path:
-          uploadedZip: uploaded-zip
-      uploadDirectory: uploaded/
-      extractedJsonDirectory: extracted
-      tmp:
-        path:
+        directory:
+          tempZip: uploaded-zip
+          unzipped: uploaded/
+          extractedJson: extracted
+      local:
+        directory:
           zip: zip-files
       suffixes: [ '_basic_analytic_dn.ntf','_basic_analytic_dn_RPC.TXT','_basic_analytic_dnthumb.jpg','_basic_panchromatic_dn.ntf','_basic_panchromatic_dn_RPC.TXT','_basic_panchromatic_dnthumb.jpg','_metadata.json']

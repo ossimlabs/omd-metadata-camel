@@ -12,8 +12,8 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 class ExtractJson extends RouteBuilder {
     Logger logger;
 
-    @Value('${app.sqs.queue}')
-    String sqsQueueName
+    @Value('${app.sqs.extractedJsonQueue}')
+    String extractedJsonQueue
 
     @Value('${app.s3.bucket.to}')
     String s3BucketNameTo
@@ -21,7 +21,7 @@ class ExtractJson extends RouteBuilder {
     @Value('${app.sqs.instructionQueue}')
     String instructionQueue
 
-    @Value('${app.extractedJsonDirectory}')
+    @Value('${app.s3.directory.extractedJson}')
     String extractedJsonDirectory
 
     @Value('${app.suffixes}')
@@ -32,7 +32,7 @@ class ExtractJson extends RouteBuilder {
     {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
-        from("aws-sqs://${sqsQueueName}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
+        from("aws-sqs://${extractedJsonQueue}?amazonSQSClient=#client&delay=1000&maxMessagesPerPoll=5")
             .unmarshal().json()
             .process { exchange ->
                 def jsonSlurper = new JsonSlurper().parseText(exchange.in.body.Message)
@@ -45,7 +45,7 @@ class ExtractJson extends RouteBuilder {
 
                 ExchangeHandler.setS3Copy(exchange, data.objectKey, "${extractedJsonDirectory}/${objectKeyName}", s3BucketNameTo, s3BucketNameTo)
 
-                logger = new Logger("Extract Json from unzipped directory", exchange, sqsQueueName, "aws-sqs", s3BucketNameTo, "aws-s3", '')
+                logger = new Logger("Extract Json from unzipped directory", exchange, extractedJsonQueue, "aws-sqs", s3BucketNameTo, "aws-s3", '')
                 logger.logRoute()
             }
             .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")

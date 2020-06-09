@@ -20,10 +20,10 @@ class SendInstructionsMessage extends RouteBuilder {
     @Value('${app.sqs.instructionQueue}')
     String instructionQueue
 
-    @Value('${app.uploadDirectory}')
-    String uploadDirectory
+    @Value('${app.s3.directory.unzipped}')
+    String unzippedDirectory
 
-    @Value('${app.extractedJsonDirectory}')
+    @Value('${app.s3.directory.extractedJson}')
     String extractedJsonDirectory
 
     @Value('${app.suffixes}')
@@ -83,7 +83,7 @@ class SendInstructionsMessage extends RouteBuilder {
         String omdDestKey = getDestinationKey(json, ".omd")
         def message = []
         suffixes.eachWithIndex { suffix, index ->
-            def key = uploadDirectory + json.id + suffix
+            def key = unzippedDirectory + json.id + suffix
             def destKey = getDestinationKey(json, suffix)
             def val = [key: key, destKey: destKey, body: ""]
             message.add(val)
