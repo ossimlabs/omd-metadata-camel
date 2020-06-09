@@ -6,7 +6,7 @@ Micronaut Deployment of Apache Camel for processing incoming SkySat data.
 
 Variable     | Description
 ------------ | -----------
-`app.sqs.extractedJsonQueue` | *SQS queue notifying the creation of json into.*
+`app.sqs.extractedJsonQueue` | *SQS queue notifying the creation of json into s3.*
 `app.sqs.instructionQueue` | *SQS queue messages with processing instructions.*
 `app.sqs.zipQueue` | *SQS queue notifying the PUT of a zip file in s3.*
 `app.s3.bucket.to` | *S3 bucket to place files.*
