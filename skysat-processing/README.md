@@ -1,5 +1,3 @@
-```
 Variable     | Description
 ------------ | -------------
 akjfnqjkfnakjnfkajdnfkjaf | aksjnasjdn
-```
