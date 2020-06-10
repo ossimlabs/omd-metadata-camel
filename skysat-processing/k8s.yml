@@ -53,7 +53,7 @@ data:
   application.yaml: |-
     app:
       sqs:
-        extractedJsonQueue: SkySatCamelQueue
+        extractedJsonQueue: SkySatJsonQueue
         instructionQueue: SkySatProcessInstructions
         zipQueue: SkySatZipQueue
         errorQueue: SkySatErrorQueue
