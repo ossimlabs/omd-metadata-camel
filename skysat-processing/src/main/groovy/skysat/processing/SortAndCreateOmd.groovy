@@ -50,9 +50,9 @@ class SortAndCreateOmd extends RouteBuilder {
             }
             .choice()
                 .when(header("CamelAwsS3DestinationKey").endsWith("omd"))
-                .toD("aws-s3://${s3BucketNameTo}?useIAMCredentials=true")
-            .otherwise()
-                .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
+                    .toD("aws-s3://${s3BucketNameTo}?useIAMCredentials=true")
+                .otherwise()
+                    .to("aws-s3://${s3BucketNameTo}?useIAMCredentials=true&deleteAfterRead=false&operation=copyObject")
             .end()
     }
 
