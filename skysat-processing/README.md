@@ -27,5 +27,5 @@ Variable     | Description
 `app.s3.directory.unzipped` | *S3 directory where unzipped files will be created.*
 `app.s3.directory.extractedJson` | *S3 directory for extracted, metadata json files.*
 `app.local.directory.zip` | *Local directory where to copy s3 zip file in the local pod.*
-
+`suffixes` | *Suffixes to be concatenated onto the image id*
 ---
