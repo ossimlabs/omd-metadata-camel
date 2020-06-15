@@ -103,6 +103,7 @@ class SendInstructionsMessage extends RouteBuilder {
     def getDestinationKey(json, String suffix) {
         String filename = json.id + suffix;
         String acquisition_date = json.properties.acquired.replaceAll(":", "-");
+        acquisition_date = acquisition_date.substring(0, 10)
         return "${acquisition_date}/${json.id}/${filename}"
     }
 
