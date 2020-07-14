@@ -21,6 +21,14 @@ public class PostProcessor implements Processor {
         def filePath = filePathAndName.substring(0, filePathAndName.lastIndexOf("/"))
         def filenameNoExtension = filePathAndName.substring(filePathAndName.lastIndexOf("/")+1, filePathAndName.lastIndexOf("."))
         def ant = new AntBuilder()
+
+        def set = ant.fileset(dir:"${filePath}/", includes:"**/*.his")
+
+        for (f in set) {
+            exchange.in.setHeader("CamelFileName", "stop")
+            return
+        }
+
         def scanner =   ant.fileScanner {
                             fileset(dir:"${filePath}/") {
                                 for (e in extensions)
@@ -34,8 +42,8 @@ public class PostProcessor implements Processor {
             break
         }
 
-        exchange.getOut().setHeader(Exchange.HTTP_URI, url)
-        exchange.getOut().setHeader("CamelHttpMethod", "POST")
+        exchange.in.setHeader(Exchange.HTTP_URI, url)
+        exchange.in.setHeader("CamelHttpMethod", "POST")
 
         logProcess(scanner)
         logHttp(url)

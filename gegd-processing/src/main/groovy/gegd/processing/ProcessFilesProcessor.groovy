@@ -69,18 +69,39 @@ public class ProcessFilesProcessor implements Processor {
         }
 
         logProcess(size, scanner, id, relativePath, "/${mount.bucket}/${processedDirectory}")
+
+        logOmd(omdFiles)
         
-        ant.move(todir:"/${mount.bucket}/${processedDirectory}/") {
-            fileset(dir:"${relativePath}/") {
-                include(name:"${id}*")
+        try {
+            ant.move(todir:"/${mount.bucket}/${processedDirectory}/") {
+                fileset(dir:"${relativePath}/") {
+                    include(name:"${id}*")
+                }
+            } 
+        } catch (Exception ex) {
+            if( ex.exception instanceof IOException ) {
+                println "Whoops!  $ex.exception.message"
+            }
+            else {
+                throw ex
             }
         }
-        ant.chmod(perm:"777", type:"file") {
-            fileset(dir:"/${mount.bucket}/${processedDirectory}/") {
-                include(name:"${id}*")
-            }
 
-            dirset(dir:"/${mount.bucket}/${processedDirectory}") {}
+        try {
+            ant.chmod(perm:"777", type:"file") {
+                fileset(dir:"/${mount.bucket}/${processedDirectory}/") {
+                    include(name:"${id}*")
+                }
+
+                dirset(dir:"/${mount.bucket}/${processedDirectory}") {}
+            }
+        } catch (Exception ex) {
+            if( ex.exception instanceof IOException ) {
+                println "Whoops!  $ex.exception.message"
+            }
+            else {
+                throw ex
+            }
         }
 
         exchange.in.setBody(omdFiles)
@@ -133,5 +154,14 @@ public class ProcessFilesProcessor implements Processor {
 
         for (f in scanner)
             Logger.printBody(f.getAbsolutePath().split("/").last(), ColorScheme.route, ConsoleColors.FILENAME)
+    }
+
+    private void logOmd(omdFiles) {
+        Logger.printDivider("Processor", "ProcessFiles", ColorScheme.route)
+        Logger.printTitle("Creating omd files", ColorScheme.route)
+        Logger.printSubtitle("Omd files to create:", ColorScheme.route)
+
+        for (f in omdFiles)
+            Logger.printBody(f.filename, ColorScheme.route, ConsoleColors.FILENAME)
     }
 }

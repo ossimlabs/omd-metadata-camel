@@ -81,7 +81,11 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                 .filter(header("CamelFileName").endsWith(".omd"))
                 .process(postProcessor)
                 .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
-                .to("http://oldhost")
+                .choice()
+                    .when(header("CamelFileName").contains("stop"))
+                        .to("log:info")
+                    .otherwise()
+                        .to("http://oldhost")
         }
     }
 }

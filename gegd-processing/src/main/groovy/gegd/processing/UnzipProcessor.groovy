@@ -16,7 +16,6 @@ public class UnzipProcessor implements Processor {
         def srcPath = headersObj.CamelFileAbsolutePath
         def prefixDir = srcPath.split("/").last()
         prefixDir = prefixDir.substring(0, prefixDir.lastIndexOf("."))
-        println prefixDir  
         def ant = new AntBuilder()
 
         logProcess(srcPath)
@@ -31,21 +30,21 @@ public class UnzipProcessor implements Processor {
             }
         }
         def prefix = "/${mount.bucket}/unzipped/"
-        def donePath = ''
-        for (f in scanner) {
-            def path = f.getAbsolutePath()
-            if (prefix.length() == path.lastIndexOf("/")) {
-                println "SAME LENGTH!!!"
-                donePath = "done"
-            } else {
-                donePath = path.substring(prefix.length(), path.lastIndexOf("/")) + "/done"
-            }
-            println "DONE PATH: " + donePath
-            break;
-        }
+        def donePath = getDoneFilePath(scanner, prefix)
 
         exchange.in.setHeader("CamelFileName", "${donePath}")
         exchange.in.setBody("I'm done!")
+    }
+
+    private String getDoneFilePath(scanner, prefix) {
+        for (f in scanner) {
+            def path = f.getAbsolutePath()
+            if (prefix.length() == path.lastIndexOf("/"))
+                return "done"
+            else
+                return path.substring(prefix.length(), path.lastIndexOf("/")) + "/done"
+        }
+        return "badDoneFile"
     }
 
     private void logProcess(filename) {
