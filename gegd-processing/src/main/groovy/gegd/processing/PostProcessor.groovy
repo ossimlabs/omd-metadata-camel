@@ -17,35 +17,30 @@ public class PostProcessor implements Processor {
 
     public void process(Exchange exchange) throws Exception {
         ArrayList<Map> postMapList = new ArrayList<>()
-        def filePathAndName =  exchange.in.getHeaders().CamelFileAbsolutePath
-        def filePath = filePathAndName.substring(0, filePathAndName.lastIndexOf("/"))
-        def filenameNoExtension = filePathAndName.substring(filePathAndName.lastIndexOf("/")+1, filePathAndName.lastIndexOf("."))
         def ant = new AntBuilder()
+        def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
+        def filepathNoExtension = filePath.substring(0, filePath.lastIndexOf("."))
+        String url = ''
+        String postFilePath = ''
+        File hisFile = new File("${filepathNoExtension}.his")
 
-        def set = ant.fileset(dir:"${filePath}/", includes:"**/*.his")
-
-        for (f in set) {
+        if (hisFile.exists()) {
             exchange.in.setHeader("CamelFileName", "stop")
             return
         }
 
-        def scanner =   ant.fileScanner {
-                            fileset(dir:"${filePath}/") {
-                                for (e in extensions)
-                                    include(name:"${filenameNoExtension}.${e}")
-                            }
-                        }
-
-        String url = ''
-        for (f in scanner) {
-            url = "${urlPrefix}${f.getAbsolutePath().toString()}${urlSuffix}"
-            break
+        for (e in extensions) {
+            postFilePath = "${filepathNoExtension}.${e}"
+            File postFile = new File(postFilePath)
+            url = postFile.exists() ? "${urlPrefix}${postFilePath}${urlSuffix}" : url
         }
+
+        if (url != '')
+            logProcess(postFilePath)
 
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")
 
-        logProcess(scanner)
         logHttp(url)
     }
 
@@ -56,14 +51,10 @@ public class PostProcessor implements Processor {
         Logger.printBody(url, ColorScheme.http, ConsoleColors.WHITE)
     }
 
-    private void logProcess(scanner) {
+    private void logProcess(postFilePath) {
         Logger.printDivider("Merge", "PostProcessor", ColorScheme.splitter)
         Logger.printTitle("Found omd file, creating list of POST url's and files for posting", ColorScheme.splitter)
         Logger.printSubtitle("File found for POST operation:", ColorScheme.splitter)
-
-        for (f in scanner) {
-            Logger.printBody(f.getAbsolutePath().split("/").last(), ColorScheme.splitter, ConsoleColors.FILENAME)
-            break
-        }
+        Logger.printBody(postFilePath.split('/').last(), ColorScheme.splitter, ConsoleColors.FILENAME)
     }
 }

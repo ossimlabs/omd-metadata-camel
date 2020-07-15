@@ -11,6 +11,11 @@ public class ProcessFilesProcessor implements Processor {
     private def omdKeyMapList
     private String[] extensions
 
+    private def ant = new AntBuilder()
+    private String omdBody
+    private String id
+    private String processedDirectory
+
     public ProcessFilesProcessor(mount, dateKeys, omdKeyMapList, extensions) {
         this.mount = mount
         this.dateKeys = dateKeys
@@ -20,13 +25,59 @@ public class ProcessFilesProcessor implements Processor {
 
     public void process(Exchange exchange) throws Exception {
         def json = new JsonSlurper().parseText(exchange.in.getBody(String.class))
-        
+        initialize(json)
         copyFilesAndSetOmdExchange(exchange, json)
     }
 
+    private void initialize(json) {
+        this.omdBody = getOmdFileBodyString(json, omdKeyMapList)
+        this.id = findKeyValue(json, "id")
+        this.processedDirectory = getProcessedDirectory(json)
+    }
+
+    private void copyFilesAndSetOmdExchange(exchange, json) {
+        ArrayList<Map> omdFiles = new ArrayList<>()
+        def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
+        def relativePath = filePath.substring(0, filePath.lastIndexOf("/"))
+        def scanner = ant.fileScanner {
+            fileset(dir:"/${mount.bucket}/unzipped/") {
+                include(name:"**/${this.id}*")
+            }
+        }
+
+        int size = 0
+        for (f in scanner) {
+            size++
+            def path = f.getAbsolutePath()
+            def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
+            if (extensions.contains(extension)) {
+                def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
+                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody])
+            }
+        }
+
+        logProcess(size, scanner, this.id, relativePath, "/${mount.bucket}/${this.processedDirectory}")
+        logOmd(omdFiles)
+    
+        ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/") {
+            fileset(dir:"${relativePath}/") {
+                include(name:"${this.id}*")
+            }
+        } 
+
+        ant.chmod(perm:"777", type:"file") {
+            fileset(dir:"/${mount.bucket}/${this.processedDirectory}/") {
+                include(name:"${this.id}*")
+            }
+
+            dirset(dir:"/${mount.bucket}/${this.processedDirectory}") {}
+        }
+
+        exchange.in.setBody(omdFiles)
+    }
+
     private String getProcessedDirectory(json) {
-        def id = findKeyValue(json, "id")
-        def date = null
+        String date = ''
 
         for (int i = 0; i < dateKeys.length; i++) {
             date = findKeyValue(json, dateKeys[i])
@@ -35,76 +86,7 @@ public class ProcessFilesProcessor implements Processor {
         }
 
         date = date.substring(0, 10)
-
-        return "${mount.archiveDirectory}/${date}/${id}"
-    }
-
-    private void copyFilesAndSetOmdExchange(exchange, json) {
-        ArrayList<Map> omdFiles = new ArrayList<>()
-        def omdBody = getOmdFileBodyString(json, omdKeyMapList)
-        def processedDirectory = getProcessedDirectory(json)
-        def id = findKeyValue(json, "id")
-        def ant = new AntBuilder()
-        def relativePath = ''
-        def scanner = ant.fileScanner {
-            fileset(dir:"/${mount.bucket}/unzipped/") {
-                include(name:"**/${id}*")
-            }
-        }
-
-        int size = 0
-        for (f in scanner) {
-            size++
-            def path = f.getAbsolutePath().toString()
-            if (relativePath == '')
-                relativePath = path.substring(0, path.lastIndexOf("/"))
-            
-            for (String extension in extensions) {
-                if (path.endsWith(".${extension}")) {
-                    def omdFilename = path.substring(path.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
-                    omdFiles.add([filename: "${processedDirectory}/${omdFilename}", body: omdBody])
-                    break
-                }
-            }
-        }
-
-        logProcess(size, scanner, id, relativePath, "/${mount.bucket}/${processedDirectory}")
-
-        logOmd(omdFiles)
-        
-        try {
-            ant.move(todir:"/${mount.bucket}/${processedDirectory}/") {
-                fileset(dir:"${relativePath}/") {
-                    include(name:"${id}*")
-                }
-            } 
-        } catch (Exception ex) {
-            if( ex.exception instanceof IOException ) {
-                println "Whoops!  $ex.exception.message"
-            }
-            else {
-                throw ex
-            }
-        }
-
-        try {
-            ant.chmod(perm:"777", type:"file") {
-                fileset(dir:"/${mount.bucket}/${processedDirectory}/") {
-                    include(name:"${id}*")
-                }
-
-                dirset(dir:"/${mount.bucket}/${processedDirectory}") {}
-            }
-        } catch (Exception ex) {
-            if( ex.exception instanceof IOException ) {
-                println "Whoops!  $ex.exception.message"
-            }
-            else {
-                throw ex
-            }
-        }
-
-        exchange.in.setBody(omdFiles)
+        return "${mount.archiveDirectory}/${date}/${this.id}"
     }
 
     private def getOmdFileBodyString(json, omdKeyMapList) {
