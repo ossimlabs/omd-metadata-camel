@@ -62,6 +62,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
             Processor postProcessor = new PostProcessor(urlPrefix, urlSuffix, extensions)
 
             from("file:///${mount.bucket}/${mount.ingestDirectory}/?noop=true&maxMessagesPerPoll=1&delete=true")
+                .filter(header("CamelFileName").endsWith(".zip"))
                 .process(unzipProcessor)
                 .to("file:///${mount.bucket}/unzipped/")
 

@@ -38,10 +38,10 @@ spec:
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
-            claimName: gegd-processing-blacksky-data-pvc
+            claimName: blacksky-data
         - name: skysat-data
           persistentVolumeClaim:
-            claimName: gegd-processing-skysat-data-pvc
+            claimName: skysat-data
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -82,62 +82,62 @@ data:
       fileExtensions:
         - ntf
         - ntif
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: gegd-camel-gegd-processing-blacksky-data-pv
-spec:
-  capacity:
-    storage: 16G
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: camel-caravan-gegd-processing-blacksky-data-pv
+# spec:
+#   capacity:
+#     storage: 16G
 
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    path: /maxar-blacksky-data
-    server: 10.70.40.254
-  persistentVolumeReclaimPolicy: Retain
+#   accessModes:
+#     - ReadWriteMany
+#   nfs:
+#     path: /maxar-blacksky-data
+#     server: 10.70.40.254
+#   persistentVolumeReclaimPolicy: Retain
 
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: gegd-camel-gegd-processing-skysat-data-pv
-spec:
-  capacity:
-    storage: 16G
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: camel-caravan-gegd-processing-skysat-data-pv
+# spec:
+#   capacity:
+#     storage: 16G
 
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    path: /maxar-skysat-data
-    server: 10.70.40.254
-  persistentVolumeReclaimPolicy: Retain
+#   accessModes:
+#     - ReadWriteMany
+#   nfs:
+#     path: /maxar-skysat-data
+#     server: 10.70.40.254
+#   persistentVolumeReclaimPolicy: Retain
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gegd-processing-blacksky-data-pvc
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: ""
-  resources:
-    requests:
-      storage: 16G
-  volumeName: gegd-camel-gegd-processing-blacksky-data-pv
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: gegd-processing-blacksky-data-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: ""
+#   resources:
+#     requests:
+#       storage: 16G
+#   volumeName: camel-caravan-gegd-processing-blacksky-data-pv
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gegd-processing-skysat-data-pvc
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: ""
-  resources:
-    requests:
-      storage: 16G
-  volumeName: gegd-camel-gegd-processing-skysat-data-pv
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: gegd-processing-skysat-data-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: ""
+#   resources:
+#     requests:
+#       storage: 16G
+#   volumeName: camel-caravan-gegd-processing-skysat-data-pv
