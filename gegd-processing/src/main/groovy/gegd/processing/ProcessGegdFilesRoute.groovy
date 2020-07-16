@@ -1,26 +1,16 @@
 package gegd.processing
 
-import groovy.json.JsonSlurper
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.annotation.Property
+
 import javax.inject.Singleton
-import io.micronaut.context.annotation.Prototype
+
 import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.builder.ExchangeBuilder
-import org.apache.camel.AggregationStrategy
 import org.apache.camel.Exchange
 import org.apache.camel.Handler
-import org.apache.camel.CamelContext
-import java.io.InputStream
-
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder
-import org.apache.camel.dataformat.zipfile.ZipFileDataFormat
-import org.apache.camel.dataformat.zipfile.ZipSplitter
-
-import java.util.Iterator;
 
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {            
@@ -61,12 +51,19 @@ class ProcessGegdFilesRoute extends RouteBuilder {
             Processor unzipProcessor = new UnzipProcessor(mount)
             Processor postProcessor = new PostProcessor(urlPrefix, urlSuffix, extensions)
 
+            // 1. Grab zip files stored in the mounted buckets and ingest directory.
+            // 2. Unzip the files into a unique, unzipped directory.
+            // 3. Created a done file inside that same directory.
             from("file:///${mount.bucket}/${mount.ingestDirectory}/?noop=true&maxMessagesPerPoll=1&delete=true")
                 .filter(header("CamelFileName").endsWith(".zip"))
                 .process(unzipProcessor)
-                .to("file:///${mount.bucket}/unzipped/")
+                .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
 
-            from("file:///${mount.bucket}/unzipped/?noop=true&maxMessagesPerPoll=1&recursive=true&doneFileName=done")
+            // 1. Grab metadata.json files from the unzipped directory.
+            // 2. Process the image files with the same id found in the metadata.
+            // 3. Merge omd filenames and file bodies into a map and split for processing.
+            // 3. Create an omd file in the processed directory.
+            from("file:///${mount.bucket}/${mount.unzipDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true&doneFileName=done")
                 .filter(header("CamelFileName").endsWith("metadata.json"))
                 .process(processFilesProcessor)
                 .split(method(MapSplitter.class))
@@ -78,25 +75,25 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                 }
                 .to("file:///${mount.bucket}/?chmod=777&chmodDirectory=777")
 
-            from("file:///${mount.bucket}/${mount.archiveDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true")
-                .filter(header("CamelFileName").endsWith(".omd"))
-                .process(postProcessor)
-                .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
-                .choice()
-                    .when(header("CamelFileName").contains("stop"))
-                        .to("log:info")
-                    .otherwise()
-                        .to("http://oldhost")
+            // Grab omd files found in the processed directory.
+            // Send a POST to omar stager for the correspoinding image file.
+            // from("file:///${mount.bucket}/${mount.archiveDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true")
+            //     .filter(header("CamelFileName").endsWith(".omd"))
+            //     .process(postProcessor)
+            //     .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
+            //     .choice()
+            //         .when(header("CamelFileName").contains("stop"))
+            //             .to("log:info")
+            //         .otherwise()
+            //             .to("http://oldhost")
         }
     }
 }
 
 public class MapSplitter {
-
     @Handler
     public ArrayList<Map> processMessage(Exchange exchange) {
         ArrayList<Map> map = exchange.in.getBody(ArrayList.class)
         return map
     }
-
 }

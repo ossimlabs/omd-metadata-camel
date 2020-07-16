@@ -91,6 +91,9 @@ public class ColorScheme {
     public static ColorScheme splitter = new ColorScheme(ConsoleColors.PURPLE_BOLD_BRIGHT, ConsoleColors.PURPLE, ConsoleColors.CYAN, ConsoleColors.WHITE_BOLD, ConsoleColors.PURPLE)
     public static ColorScheme http = new ColorScheme(ConsoleColors.YELLOW_BOLD_BRIGHT, ConsoleColors.YELLOW, ConsoleColors.WHITE, ConsoleColors.WHITE_BOLD, ConsoleColors.YELLOW)
 
+    /**
+     * Constructor.
+     */
     public ColorScheme(title, subtitle, body, dividerName, divider) {
         this.title = title
         this.subtitle = subtitle

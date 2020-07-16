@@ -60,9 +60,11 @@ data:
         - bucket: maxar-blacksky-data
           ingestDirectory: ingest
           archiveDirectory: archive
+          unzipDirectory: unzipped
         - bucket: maxar-skysat-data
           ingestDirectory: ingest
           archiveDirectory: archive
+          unzipDirectory: unzipped
       parsing:
         dateKeys:
           - acquisitionDate
@@ -78,6 +80,24 @@ data:
               - oldValue: skysat
                 newValue: SkySat
               - oldValue: Global-1
+                newValue: BlackSky
+              - oldValue: Global-2
+                newValue: BlackSky
+              - oldValue: Global-3
+                newValue: BlackSky
+              - oldValue: Global-4
+                newValue: BlackSky
+              - oldValue: Global-5
+                newValue: BlackSky
+              - oldValue: Global-6
+                newValue: BlackSky
+              - oldValue: Global-7
+                newValue: BlackSky
+              - oldValue: Global-8
+                newValue: BlackSky
+              - oldValue: Global-9
+                newValue: BlackSky
+              - oldValue: Global-10
                 newValue: BlackSky
       fileExtensions:
         - ntf
