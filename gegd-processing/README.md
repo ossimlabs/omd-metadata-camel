@@ -1,4 +1,4 @@
-# SkySat Processing
+# GEGD Processing
 Micronaut Deployment of Apache Camel for processing incoming GEGD data.
 
 ---
@@ -20,8 +20,8 @@ temprary directory for this stage to pick up and process
 
 Variable     | Description
 ------------ | -----------
-`app.post.url.prefix` | *Everything before the filename for the stager POST url*
-`app.post.url.suffix` | *Everything after the filename for the stager POST url*
-`app.mounts` | *Contains the bucket specific information for the ingest workflow*
-`app.parsing` | *Contains lists and maps for parsing the `metadata.json` files to create omd files*
+`app.post.url.prefix` | Everything before the filename for the stager POST url
+`app.post.url.suffix` | Everything after the filename for the stager POST url
+`app.mounts` | Contains the bucket specific information for the ingest workflow
+`app.parsing` | Contains lists and maps for parsing the `metadata.json` files to create omd files
 ---
