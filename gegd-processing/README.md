@@ -3,7 +3,7 @@ Micronaut Deployment of Apache Camel for processing incoming GEGD data.
 
 ---
 
-### Routes
+### Step by Step Process
 This camel hump is the second of two stages in processing GEGD data.
 After the first stage, zipped imagery files will be placed into a
 temprary directory for this stage to pick up and process
