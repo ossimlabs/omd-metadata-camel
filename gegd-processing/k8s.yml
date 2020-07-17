@@ -33,15 +33,10 @@ spec:
           volumeMounts:
             - mountPath: /maxar-blacksky-data
               name: blacksky-data
-            - mountPath: /maxar-skysat-data
-              name: skysat-data
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
-            claimName: blacksky-data
-        - name: skysat-data
-          persistentVolumeClaim:
-            claimName: skysat-data
+            claimName: gegd-processing-blacksky-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -115,23 +110,7 @@ data:
 #     - ReadWriteMany
 #   nfs:
 #     path: /maxar-blacksky-data
-#     server: 10.70.40.254
-#   persistentVolumeReclaimPolicy: Retain
-
-# ---
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: camel-caravan-gegd-processing-skysat-data-pv
-# spec:
-#   capacity:
-#     storage: 16G
-
-#   accessModes:
-#     - ReadWriteMany
-#   nfs:
-#     path: /maxar-skysat-data
-#     server: 10.70.40.254
+#     server: o2-nfs.private.ossim.io
 #   persistentVolumeReclaimPolicy: Retain
 
 # ---
@@ -147,17 +126,3 @@ data:
 #     requests:
 #       storage: 16G
 #   volumeName: camel-caravan-gegd-processing-blacksky-data-pv
-
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: gegd-processing-skysat-data-pvc
-# spec:
-#   accessModes:
-#     - ReadWriteMany
-#   storageClassName: ""
-#   resources:
-#     requests:
-#       storage: 16G
-#   volumeName: camel-caravan-gegd-processing-skysat-data-pv

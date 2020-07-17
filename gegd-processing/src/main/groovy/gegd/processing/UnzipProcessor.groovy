@@ -40,6 +40,8 @@ public class UnzipProcessor implements Processor {
         def prefix = "/${mount.bucket}/${mount.unzipDirectory}/"
         def donePath = getDoneFilePath(scanner, prefix)
 
+        ant.delete(file:"${srcPath}") {}
+
         exchange.in.setHeader("CamelFileName", "${donePath}")
         exchange.in.setBody("I'm done!")
     }
