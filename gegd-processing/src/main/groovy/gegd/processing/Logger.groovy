@@ -10,7 +10,7 @@ class Logger {
         def titleLines = Camel.CAMEL_TITLE.split("\\n")
         def dividerLines = Camel.HUMP_DIVIDER.split("\\n")
         def camel = Camel.CAMEL_BIG.split("\\n")
-        def dividerNoFace = Camel.HUMB_DIVIDER_NO_FACE.split("\\n")
+        def dividerNoFace = Camel.HUMP_DIVIDER_NO_FACE.split("\\n")
         for (def l in dividerLines) {
             println ConsoleColors.WHITE_BOLD_BRIGHT + l
         }
@@ -63,7 +63,7 @@ class Logger {
 public class Camel {
     public static final String BORDER = '/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7_/"7'
 
-    public static final String HUMB_DIVIDER_NO_FACE = '     .-.     .-.     .-.     .-.     .-.     .-.     .-.     .-.    \n`._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.'
+    public static final String HUMP_DIVIDER_NO_FACE = '     .-.     .-.     .-.     .-.     .-.     .-.     .-.     .-.    \n`._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.'
 
     public static final String HUMP_DIVIDER = '                                                             ,^-.__  \n                                                             /      \\\n     .-.     .-.     .-.     .-.     .-.     .-.     .-.    |  ;-\'\'\'\'\n`._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'   `._.\'  |     '
     public static final String BASIC_DIVIDER = '='
