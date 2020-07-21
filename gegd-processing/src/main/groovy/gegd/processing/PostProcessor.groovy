@@ -35,7 +35,7 @@ public class PostProcessor implements Processor {
         File hisFile = new File("${filepathNoExtension}.his")
 
         if (hisFile.exists()) {
-            exchange.in.setHeader("CamelFileName", "stop")
+            exchange.in.setHeader("CamelHttpMethod", "stop")
             return
         }
 
@@ -55,7 +55,7 @@ public class PostProcessor implements Processor {
     }
 
     private void logHttp(url) {
-        Logger.printDivider("HTTP", "POST", ColorScheme.http)
+        Logger.printDivider("HTTP", "POST", ColorScheme.http, true)
         Logger.printTitle("Sending https post to Omar Stager", ColorScheme.http)
         Logger.printSubtitle("POST URL:", ColorScheme.http)
         Logger.printBody(url, ColorScheme.http, ConsoleColors.WHITE)

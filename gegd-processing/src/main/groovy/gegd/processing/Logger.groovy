@@ -52,11 +52,15 @@ class Logger {
         println ""
     }
 
-    public static printDivider(title, name, ColorScheme colorScheme) {
+    public static printDivider(title, name, ColorScheme colorScheme, boolean hasDate = false) {
+        Date date = new Date();
         def dividerName = colorScheme.dividerName
         def divider = colorScheme.divider
+        def dateString = hasDate ? "${date.toString()} " : ""
+        def dLength = hasDate ? date.toString().length() : 0
+        def titleLength = (title.length() + name.length() + 4 + dLength)
 
-        println dividerName + "${title}" + ConsoleColors.WHITE + " [${name}] " + divider + "*"*(printDividerLength - (title.length() + name.length() + 3))
+        println dividerName + "${title}" + ConsoleColors.WHITE + " [${name}] " + ConsoleColors.CYAN + dateString + divider + "*"*(printDividerLength - titleLength)
     }
 }
 
@@ -90,6 +94,7 @@ public class ColorScheme {
     public static ColorScheme aggregator = new ColorScheme(ConsoleColors.GREEN_BOLD_BRIGHT, ConsoleColors.GREEN, ConsoleColors.YELLOW, ConsoleColors.WHITE_BOLD, ConsoleColors.GREEN)
     public static ColorScheme splitter = new ColorScheme(ConsoleColors.PURPLE_BOLD_BRIGHT, ConsoleColors.PURPLE, ConsoleColors.CYAN, ConsoleColors.WHITE_BOLD, ConsoleColors.PURPLE)
     public static ColorScheme http = new ColorScheme(ConsoleColors.YELLOW_BOLD_BRIGHT, ConsoleColors.YELLOW, ConsoleColors.WHITE, ConsoleColors.WHITE_BOLD, ConsoleColors.YELLOW)
+    public static ColorScheme error = new ColorScheme(ConsoleColors.RED_BOLD_BRIGHT, ConsoleColors.RED, ConsoleColors.RED, ConsoleColors.RED_BOLD, ConsoleColors.RED)
 
     /**
      * Constructor.

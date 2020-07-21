@@ -77,16 +77,43 @@ class ProcessGegdFilesRoute extends RouteBuilder {
 
             // Grab omd files found in the processed directory.
             // Send a POST to omar stager for the correspoinding image file.
-            // from("file:///${mount.bucket}/${mount.archiveDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true")
-            //     .filter(header("CamelFileName").endsWith(".omd"))
-            //     .process(postProcessor)
-            //     .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
-            //     .choice()
-            //         .when(header("CamelFileName").contains("stop"))
-            //             .to("log:info")
-            //         .otherwise()
-            //             .to("http://oldhost")
+            from("file:///${mount.bucket}/${mount.archiveDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true")
+                .filter(header("CamelFileName").endsWith(".omd"))
+                .process(postProcessor)
+                .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
+                .choice()
+                    .when(header("CamelHttpMethod").contains("stop"))
+                        .process { exchange ->
+                            def filepath = exchange.in.getHeaders().CamelFileAbsolutePath
+                            println exchange.in.getHeaders().CamelFileAbsolutePath + " already staged!\n"
+                        }
+                    .otherwise()
+                        .doTry()
+                            .to("http://oldhost")
+                            .process { exchange ->
+                                logHttpResponse(exchange.in.getBody(String.class))
+                            }
+                        .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
+                            .process { exchange ->
+                                final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
+                                logHttpError(ex.getMessage())
+                            }
+                    .end()
         }
+    }
+
+    private void logHttpResponse(message) {
+        Logger.printDivider("HTTP", "Response", ColorScheme.http)
+        Logger.printTitle("http response from omar-stager", ColorScheme.http)
+        Logger.printSubtitle("Response body:", ColorScheme.http)
+        Logger.printBody(message, ColorScheme.http, ConsoleColors.WHITE)
+    }
+
+    private void logHttpError(message) {
+        Logger.printDivider("ERROR", "HTTP", ColorScheme.error)
+        Logger.printTitle("Error caught when sending POST to omar-stager", ColorScheme.error)
+        Logger.printSubtitle("Error:", ColorScheme.error)
+        Logger.printBody(message, ColorScheme.error)
     }
 }
 

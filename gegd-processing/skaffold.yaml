@@ -12,3 +12,22 @@ deploy:
   kubectl:
     manifests:
     - k8s.yml
+
+# HELM DEPLOYMENT CONFIGURATION
+# apiVersion: skaffold/v2beta5
+# kind: Config
+# metadata:
+#   name: gegd-processing
+# build:
+#   artifacts:
+#   - image: nexus-docker-public-hosted.ossim.io/gegd-processing
+#     jib: {}
+#   tagPolicy:
+#     gitCommit: {}
+# deploy:
+#   helm:
+#     releases:
+#     - name: gegd-processing
+#       chartPath: charts
+#       artifactOverrides:
+#         image: nexus-docker-public-hosted.ossim.io/gegd-processing
