@@ -1,4 +1,4 @@
-# GEGD Processing
+# 3pa Unzip and Ingest
 Micronaut Deployment of Apache Camel for processing incoming GEGD data.
 
 ---
