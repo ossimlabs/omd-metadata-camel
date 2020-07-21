@@ -36,7 +36,7 @@ spec:
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
-            claimName: 3pa-unzip-and-ingest-blacksky-data-pvc
+            claimName: gegd-processing-blacksky-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap

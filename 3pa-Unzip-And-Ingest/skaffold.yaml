@@ -29,5 +29,3 @@ deploy:
 #     releases:
 #     - name: 3pa-unzip-and-ingest
 #       chartPath: charts
-#       artifactOverrides:
-#         image: nexus-docker-public-hosted.ossim.io/3pa-unzip-and-ingest

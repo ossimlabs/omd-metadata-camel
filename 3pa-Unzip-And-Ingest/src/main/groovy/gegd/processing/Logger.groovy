@@ -6,6 +6,28 @@ class Logger {
     public static final int printDividerLength = 100
     public static final String bodySpacer = "    "
 
+    private String type
+    private String name
+    private String title
+    private String subtitle
+    private String body
+    private ColorScheme colorScheme
+    private File logFile
+    private boolean hasDate
+    private String bodyOverride
+
+    public Logger(type, name, title, subtitle, body, colorScheme, logFile = null, hasDate = false, bodyOverride = null) {
+        this.type = type
+        this.name = name
+        this.title = title
+        this.subtitle = subtitle
+        this.body = body
+        this.colorScheme = colorScheme
+        this.logFile = logFile
+        this.hasDate = hasDate
+        this.bodyOverride = bodyOverride
+    }
+
     public static printCamelTitleScreen() {
         def titleLines = Camel.CAMEL_TITLE.split("\\n")
         def dividerLines = Camel.HUMP_DIVIDER.split("\\n")
@@ -32,35 +54,68 @@ class Logger {
         println ""
     }
 
-    public static printTitle(title, ColorScheme colorScheme) {
+    public void printTitle() {
         def color = colorScheme.title
-        println color + title
+        String printString = color + title
+        String logString = title + "\n"
+        println printString
+
+        if (logFile != null)
+            logIt(logString, logFile)
     }
 
-    public static printSubtitle(subtitle, ColorScheme colorScheme) {
+    public void printSubtitle() {
         def color = colorScheme.subtitle
-        println color + subtitle
+        String printString = color + subtitle
+        String logString = subtitle + "\n"
+        println printString
+
+        if (logFile != null)
+            logIt(logString, logFile)
     }
 
-    public static printBody(body, ColorScheme colorScheme, String colorOverride = null) {
+    public void printBody() {
         def color = colorScheme.body
-        if (colorOverride != null)
-            color = colorOverride
+        if (bodyOverride != null)
+            color = bodyOverride
         def lines = body.split("\\n")
-        for (String line in lines)
-            println color + bodySpacer + line
-        println ""
+        String printString = ""
+        String logString = ""
+        for (String line in lines) {
+            printString += color + bodySpacer + line + "\n"
+            logString += bodySpacer + line + "\n"
+        }
+        println printString
+
+        if (logFile != null)
+            logIt((logString + "\n"), logFile)
     }
 
-    public static printDivider(title, name, ColorScheme colorScheme, boolean hasDate = false) {
+    public void printDivider() {
         Date date = new Date();
         def dividerName = colorScheme.dividerName
         def divider = colorScheme.divider
         def dateString = hasDate ? "${date.toString()} " : ""
         def dLength = hasDate ? date.toString().length() : 0
-        def titleLength = (title.length() + name.length() + 4 + dLength)
+        def typeLength = (type.length() + name.length() + 4 + dLength)
 
-        println dividerName + "${title}" + ConsoleColors.WHITE + " [${name}] " + ConsoleColors.CYAN + dateString + divider + "*"*(printDividerLength - titleLength)
+        String printString = dividerName + "${type}" + ConsoleColors.WHITE + " [${name}] " + ConsoleColors.CYAN + dateString + divider + "*"*(printDividerLength - typeLength)
+        String logString = "${type} [${name}] ${dateString}\n"
+        println printString
+
+        if (logFile != null)
+            logIt(logString, logFile)
+    }
+
+    public void logIt(entry, File logFile) {
+        logFile.append(entry)
+    }
+
+    public void log() {
+        this.printDivider()
+        this.printTitle()
+        this.printSubtitle()
+        this.printBody()
     }
 }
 

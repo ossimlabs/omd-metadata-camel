@@ -6,6 +6,8 @@ import org.apache.camel.Exchange
 public class UnzipProcessor implements Processor {
 
     private Map mount
+    private File logFile
+
     private def ant = new AntBuilder()
 
     /**
@@ -13,6 +15,7 @@ public class UnzipProcessor implements Processor {
      */
     public UnzipProcessor(mount) {
         this.mount = mount
+        this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
     }
 
     /**
@@ -65,9 +68,10 @@ public class UnzipProcessor implements Processor {
     }
 
     private void logProcess(filename) {
-        Logger.printDivider("Processor", "UnzipProcessor", ColorScheme.route)
-        Logger.printTitle("Unzipping file for processing", ColorScheme.route)
-        Logger.printSubtitle("File being unzipped:", ColorScheme.route)
-        Logger.printBody(filename, ColorScheme.route, ConsoleColors.FILENAME)
+        Logger logger = new Logger("Processor", "UnzipProcessor", 
+                                   "Unzipping file for processing", 
+                                   "File being unzipped:", 
+                                   filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+        logger.log()
     }
 }

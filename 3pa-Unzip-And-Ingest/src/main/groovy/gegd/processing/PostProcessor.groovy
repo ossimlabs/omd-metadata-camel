@@ -5,17 +5,22 @@ import org.apache.camel.Exchange
 
 public class PostProcessor implements Processor {
 
+    private Map mount
     private String urlPrefix
     private String urlSuffix
     private String[] extensions
 
+    private File logFile
+
     /**
      * Constructor.
      */
-    public PostProcessor(urlPrefix, urlSuffix, extensions) {
+    public PostProcessor(mount, urlPrefix, urlSuffix, extensions) {
+        this.mount = mount
         this.urlPrefix = urlPrefix
         this.urlSuffix = urlSuffix
         this.extensions = extensions
+        this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
     }
 
     /**
@@ -55,16 +60,19 @@ public class PostProcessor implements Processor {
     }
 
     private void logHttp(url) {
-        Logger.printDivider("HTTP", "POST", ColorScheme.http, true)
-        Logger.printTitle("Sending https post to Omar Stager", ColorScheme.http)
-        Logger.printSubtitle("POST URL:", ColorScheme.http)
-        Logger.printBody(url, ColorScheme.http, ConsoleColors.WHITE)
+        Logger logger = new Logger("HTTP", "POST", 
+                                   "Sending https post to Omar Stager", 
+                                   "POST URL:",
+                                   url, ColorScheme.http, logFile, false, ConsoleColors.WHITE)
+        logger.log()
     }
 
     private void logProcess(postFilePath) {
-        Logger.printDivider("Merge", "PostProcessor", ColorScheme.splitter)
-        Logger.printTitle("Found omd file, creating list of POST url's and files for posting", ColorScheme.splitter)
-        Logger.printSubtitle("File found for POST operation:", ColorScheme.splitter)
-        Logger.printBody(postFilePath.split('/').last(), ColorScheme.splitter, ConsoleColors.FILENAME)
+        Logger logger = new Logger("Merge", "PostProcessor", 
+                                   "Found omd file of image file to be posted", 
+                                   "File found for POST operation:", 
+                                   postFilePath.split('/').last(), ColorScheme.splitter, 
+                                   logFile, false, ConsoleColors.FILENAME)
+        logger.log()
     }
 }

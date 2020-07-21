@@ -47,6 +47,8 @@ metadata:
 data:
   application.yaml: |-
     app:
+      logging:
+        logFile: 'logs.txt'
       post:
         url:
           prefix: 'https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename='

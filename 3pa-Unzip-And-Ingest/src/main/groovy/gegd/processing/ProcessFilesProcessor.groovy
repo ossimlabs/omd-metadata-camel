@@ -14,6 +14,7 @@ public class ProcessFilesProcessor implements Processor {
     private String[] dateKeys
     private def omdKeyMapList
     private String[] extensions
+    private File logFile
 
     private def ant = new AntBuilder()
 
@@ -30,6 +31,7 @@ public class ProcessFilesProcessor implements Processor {
         this.dateKeys = dateKeys
         this.omdKeyMapList = omdKeyMapList
         this.extensions = extensions
+        this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
     }
 
     /**
@@ -190,20 +192,28 @@ public class ProcessFilesProcessor implements Processor {
     }
 
     private void logProcess(size, scanner, id, from, to) {
-        Logger.printDivider("Processor", "ProcessFiles", ColorScheme.route)
-        Logger.printTitle("Found metadata file for processing", ColorScheme.route)
-        Logger.printSubtitle("Copying ${size} files with image_id: ${id} from ${from} to ${to}:", ColorScheme.route)
-
+        String body = ""
         for (f in scanner)
-            Logger.printBody(f.getAbsolutePath().split("/").last(), ColorScheme.route, ConsoleColors.FILENAME)
+            body += f.getAbsolutePath().split("/").last() + "\n"
+        
+        Logger logger = new Logger("Processor", "ProcessFiles", 
+                                   "Found metadata file for processing", 
+                                   "Copying ${size} files with image_id: ${id} from ${from} to ${to}:", 
+                                   body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+        
+        logger.log()
     }
 
     private void logOmd(omdFiles) {
-        Logger.printDivider("Processor", "ProcessFiles", ColorScheme.route)
-        Logger.printTitle("Creating omd files", ColorScheme.route)
-        Logger.printSubtitle("Omd files to create:", ColorScheme.route)
-
+        String body = ""
         for (f in omdFiles)
-            Logger.printBody(f.filename, ColorScheme.route, ConsoleColors.FILENAME)
+            body += f.filename + "\n"
+
+        Logger logger = new Logger("Processor", "ProcessFiles", 
+                                   "Creating omd files", 
+                                   "Omd files to create:",
+                                   body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+
+        logger.log()
     }
 }

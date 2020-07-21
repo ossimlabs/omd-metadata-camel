@@ -13,7 +13,10 @@ import org.apache.camel.Exchange
 import org.apache.camel.Handler
 
 @Singleton
-class ProcessGegdFilesRoute extends RouteBuilder {            
+class ProcessGegdFilesRoute extends RouteBuilder {    
+
+    @Value('${app.logging.logFile}')
+    String logFilePath
 
     // Array of mounts. These are the volume mounts of this pod.
     // Each mount has a bucket name and an archive and ingest directory.
@@ -47,9 +50,12 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
         for (Map mount in mounts) {
+            mount.logFilePath = this.logFilePath
+            File logFile = new File("/${mount.bucket}/${mount.logFilePath}")
+
             Processor processFilesProcessor = new ProcessFilesProcessor(mount, dateKeys, omdKeyMapList, extensions)
             Processor unzipProcessor = new UnzipProcessor(mount)
-            Processor postProcessor = new PostProcessor(urlPrefix, urlSuffix, extensions)
+            Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix, extensions)
 
             // 1. Grab zip files stored in the mounted buckets and ingest directory.
             // 2. Unzip the files into a unique, unzipped directory.
@@ -85,35 +91,29 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     .when(header("CamelHttpMethod").contains("stop"))
                         .process { exchange ->
                             def filepath = exchange.in.getHeaders().CamelFileAbsolutePath
-                            println exchange.in.getHeaders().CamelFileAbsolutePath + " already staged!\n"
+                            Logger.logIt("\n" + exchange.in.getHeaders().CamelFileAbsolutePath + " already staged!\n\n", logFile)
                         }
                     .otherwise()
                         .doTry()
                             .to("http://oldhost")
                             .process { exchange ->
-                                logHttpResponse(exchange.in.getBody(String.class))
+                                Logger logger = new Logger("HTTP", "Response", 
+                                                           "http response from omar-stager", 
+                                                           "Response body:", 
+                                                           exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
+                                logger.log()
                             }
                         .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
                             .process { exchange ->
                                 final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
-                                logHttpError(ex.getMessage())
+                                Logger logger = new Logger("ERROR", "HTTP", 
+                                                           "Error caught when sending POST to omar-stager", 
+                                                           "Error:", 
+                                                           ex.getMessage(), ColorScheme.error, logFile, true)
+                                logger.log()
                             }
                     .end()
         }
-    }
-
-    private void logHttpResponse(message) {
-        Logger.printDivider("HTTP", "Response", ColorScheme.http)
-        Logger.printTitle("http response from omar-stager", ColorScheme.http)
-        Logger.printSubtitle("Response body:", ColorScheme.http)
-        Logger.printBody(message, ColorScheme.http, ConsoleColors.WHITE)
-    }
-
-    private void logHttpError(message) {
-        Logger.printDivider("ERROR", "HTTP", ColorScheme.error)
-        Logger.printTitle("Error caught when sending POST to omar-stager", ColorScheme.error)
-        Logger.printSubtitle("Error:", ColorScheme.error)
-        Logger.printBody(message, ColorScheme.error)
     }
 }
 
