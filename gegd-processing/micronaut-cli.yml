@@ -1,5 +1,0 @@
-profile: service
-defaultPackage: gegd.processing
----
-testFramework: spock
-sourceLanguage: groovy

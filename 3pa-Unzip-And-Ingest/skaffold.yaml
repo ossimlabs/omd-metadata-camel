@@ -1,10 +1,10 @@
 apiVersion: skaffold/v2beta5
 kind: Config
 metadata:
-  name: 3pa-Unzip-And-Ingest
+  name: 3pa-unzip-and-ingest
 build:
   artifacts:
-  - image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest
+  - image: nexus-docker-public-hosted.ossim.io/3pa-unzip-and-ingest
     jib: {}
   tagPolicy:
     gitCommit: {}
@@ -17,17 +17,17 @@ deploy:
 # apiVersion: skaffold/v2beta5
 # kind: Config
 # metadata:
-#   name: 3pa-Unzip-And-Ingest
+#   name: 3pa-unzip-and-ingest
 # build:
 #   artifacts:
-#   - image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest
+#   - image: nexus-docker-public-hosted.ossim.io/3pa-unzip-and-ingest
 #     jib: {}
 #   tagPolicy:
 #     gitCommit: {}
 # deploy:
 #   helm:
 #     releases:
-#     - name: 3pa-Unzip-And-Ingest
+#     - name: 3pa-unzip-and-ingest
 #       chartPath: charts
 #       artifactOverrides:
-#         image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest
+#         image: nexus-docker-public-hosted.ossim.io/3pa-unzip-and-ingest

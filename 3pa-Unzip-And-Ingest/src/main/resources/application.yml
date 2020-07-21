@@ -1,3 +1,3 @@
 micronaut:
   application:
-    name: 3pa-Unzip-And-Ingest
+    name: 3pa-unzip-and-ingest

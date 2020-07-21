@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: 3pa-Unzip-And-Ingest
+    name: 3pa-unzip-and-ingest
   config-client:
     enabled: true
 
@@ -18,4 +18,4 @@ kubernetes:
       enabled: true
       watch: true
       labels:
-        - app: 3pa-Unzip-And-Ingest
+        - app: 3pa-unzip-and-ingest

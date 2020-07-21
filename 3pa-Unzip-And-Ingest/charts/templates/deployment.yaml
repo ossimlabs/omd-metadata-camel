@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "3pa-Unzip-And-Ingest"
+  name: "3pa-unzip-and-ingest"
 spec:
   selector:
     matchLabels:
-      app: "3pa-Unzip-And-Ingest"
+      app: "3pa-unzip-and-ingest"
   template:
     metadata:
       labels:
-        app: "3pa-Unzip-And-Ingest"
+        app: "3pa-unzip-and-ingest"
     spec:
       containers:
-        - name: "3pa-Unzip-And-Ingest"
-          image: "nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest"
+        - name: "3pa-unzip-and-ingest"
+          image: "nexus-docker-public-hosted.ossim.io/3pa-unzip-and-ingest"
           ports:
             - name: http
               containerPort: 8080
@@ -36,14 +36,14 @@ spec:
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
-            claimName: 3pa-Unzip-And-Ingest-blacksky-data-pvc
+            claimName: 3pa-unzip-and-ingest-blacksky-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: 3pa-Unzip-And-Ingest
+  name: 3pa-unzip-and-ingest
   labels:
-    app: 3pa-Unzip-And-Ingest
+    app: 3pa-unzip-and-ingest
 data:
   application.yaml: |-
     app:
