@@ -1,0 +1,33 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: 3pa-Unzip-And-Ingest
+build:
+  artifacts:
+  - image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest
+    jib: {}
+  tagPolicy:
+    gitCommit: {}
+deploy:
+  kubectl:
+    manifests:
+    - k8s.yml
+
+# HELM DEPLOYMENT CONFIGURATION
+# apiVersion: skaffold/v2beta5
+# kind: Config
+# metadata:
+#   name: 3pa-Unzip-And-Ingest
+# build:
+#   artifacts:
+#   - image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest
+#     jib: {}
+#   tagPolicy:
+#     gitCommit: {}
+# deploy:
+#   helm:
+#     releases:
+#     - name: 3pa-Unzip-And-Ingest
+#       chartPath: charts
+#       artifactOverrides:
+#         image: nexus-docker-public-hosted.ossim.io/3pa-Unzip-And-Ingest

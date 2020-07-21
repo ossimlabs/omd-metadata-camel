@@ -1,0 +1,21 @@
+micronaut:
+  application:
+    name: 3pa-Unzip-And-Ingest
+  config-client:
+    enabled: true
+
+kubernetes:
+  client:
+    secure: true
+    namespace: camel-caravan
+
+    secrets:
+      enabled: false
+    discovery:
+      enabled: true
+
+    config-maps:
+      enabled: true
+      watch: true
+      labels:
+        - app: 3pa-Unzip-And-Ingest
