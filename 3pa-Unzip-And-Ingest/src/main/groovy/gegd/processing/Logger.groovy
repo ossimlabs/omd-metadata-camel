@@ -111,6 +111,10 @@ class Logger {
         logFile.append(entry)
     }
 
+    public static void logLine(entry, File logFile) {
+        logFile.append(entry)
+    }
+
     public void log() {
         this.printDivider()
         this.printTitle()
