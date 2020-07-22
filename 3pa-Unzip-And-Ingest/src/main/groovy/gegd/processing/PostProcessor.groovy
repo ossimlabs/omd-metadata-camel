@@ -37,13 +37,8 @@ public class PostProcessor implements Processor {
         def filepathNoExtension = filePath.substring(0, filePath.lastIndexOf("."))
         String url = ''
         String postFilePath = ''
-        File hisFile = new File("${filepathNoExtension}.his")
 
-        if (hisFile.exists()) {
-            exchange.in.setHeader("CamelHttpMethod", "stop-his-file-already-exists")
-            Logger.logLine(("\n${filepathNoExtension}.his already staged!\n\n"), logFile)
-            return
-        }
+        ant.move(file:"${filePath}", tofile:"${filepathNoExtension}.omd") {}
 
         for (e in extensions) {
             postFilePath = "${filepathNoExtension}.${e}"
@@ -51,14 +46,7 @@ public class PostProcessor implements Processor {
             url = postFile.exists() ? "${urlPrefix}${postFilePath}${urlSuffix}" : url
         }
 
-        if (url != '')
-            logProcess(postFilePath)
-        else {
-            exchange.in.setHeader("CamelHttpMethod", "stop-omd-file-has-no-image")
-            Logger.logLine(("\nomd file has no image!\n\n"), logFile)
-            return
-        }
-
+        logProcess(postFilePath)
 
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")
