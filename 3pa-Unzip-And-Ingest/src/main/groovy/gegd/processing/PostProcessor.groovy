@@ -24,13 +24,18 @@ public class PostProcessor implements Processor {
     }
 
     /**
-     * Process to POST to omar stager the filename of the file corresponding 
+     * Process to POST to omar stager the filename of the file corresponding
      * to the omd file in the exchange.
-     * 
-     * @param exchange This exchange contains an omd file in which there should be a corresponding 
+     *
+     * @param exchange This exchange contains an omd file in which there should be a corresponding
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
+
+        println "#"*80
+        println "INSIDE POST PROCESSOR"
+        println "#"*80
+
         ArrayList<Map> postMapList = new ArrayList<>()
         def ant = new AntBuilder()
         def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
@@ -40,6 +45,10 @@ public class PostProcessor implements Processor {
         File hisFile = new File("${filepathNoExtension}.his")
 
         if (hisFile.exists()) {
+            println "-"*80
+            println "his file exists"
+            println "${filepathNoExtension}.his"
+            println "-"*80
             exchange.in.setHeader("CamelHttpMethod", "stop-his-file-already-exists")
             Logger.logLine(("\n${filepathNoExtension}.his already staged!\n\n"), logFile)
             return
@@ -54,6 +63,9 @@ public class PostProcessor implements Processor {
         if (url != '')
             logProcess(postFilePath)
         else {
+            println "@"*80
+            println "no image for omd file"
+            println "@"*80
             exchange.in.setHeader("CamelHttpMethod", "stop-omd-file-has-no-image")
             Logger.logLine(("\nomd file has no image!\n\n"), logFile)
             return
@@ -67,18 +79,18 @@ public class PostProcessor implements Processor {
     }
 
     private void logHttp(url) {
-        Logger logger = new Logger("HTTP", "POST", 
-                                   "Sending https post to Omar Stager", 
+        Logger logger = new Logger("HTTP", "POST",
+                                   "Sending https post to Omar Stager",
                                    "POST URL:",
                                    url, ColorScheme.http, logFile, false, ConsoleColors.WHITE)
         logger.log()
     }
 
     private void logProcess(postFilePath) {
-        Logger logger = new Logger("Merge", "PostProcessor", 
-                                   "Found omd file of image file to be posted", 
-                                   "File found for POST operation:", 
-                                   postFilePath.split('/').last(), ColorScheme.splitter, 
+        Logger logger = new Logger("Merge", "PostProcessor",
+                                   "Found omd file of image file to be posted",
+                                   "File found for POST operation:",
+                                   postFilePath.split('/').last(), ColorScheme.splitter,
                                    logFile, false, ConsoleColors.FILENAME)
         logger.log()
     }

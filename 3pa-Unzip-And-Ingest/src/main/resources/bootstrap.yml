@@ -7,7 +7,6 @@ micronaut:
 kubernetes:
   client:
     secure: true
-    namespace: camel-caravan
 
     secrets:
       enabled: false
