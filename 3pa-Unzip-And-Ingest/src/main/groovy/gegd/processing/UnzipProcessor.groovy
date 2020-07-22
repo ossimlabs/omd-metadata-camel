@@ -36,7 +36,7 @@ public class UnzipProcessor implements Processor {
                     overwrite:"false" )
 
         def scanner = ant.fileScanner {
-            fileset(dir:"/${mount.bucket}/${mount.unzipDirectory}/") {
+            fileset(dir:"/${mount.bucket}/${mount.unzipDirectory}/${prefixDir}/") {
                 include(name:"**/*metadata.json")
             }
         }
@@ -47,6 +47,8 @@ public class UnzipProcessor implements Processor {
 
         exchange.in.setHeader("CamelFileName", "${donePath}")
         exchange.in.setBody("I'm done!")
+
+        logDone(donePath)
     }
 
     /**
@@ -71,6 +73,14 @@ public class UnzipProcessor implements Processor {
         Logger logger = new Logger("Processor", "UnzipProcessor", 
                                    "Unzipping file for processing", 
                                    "File being unzipped:", 
+                                   filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+        logger.log()
+    }
+
+    private void logDone(filename) {
+        Logger logger = new Logger("Processor", "UnzipProcessor", 
+                                   "Create done file in same directory as metadata.json file", 
+                                   "Done file name:", 
                                    filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
         logger.log()
     }
