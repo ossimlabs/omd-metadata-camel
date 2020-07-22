@@ -40,7 +40,8 @@ public class PostProcessor implements Processor {
         File hisFile = new File("${filepathNoExtension}.his")
 
         if (hisFile.exists()) {
-            exchange.in.setHeader("CamelHttpMethod", "stop")
+            exchange.in.setHeader("CamelHttpMethod", "stop-his-file-already-exists")
+            Logger.logLine(("\n${filepathNoExtension}.his already staged!\n\n"), logFile)
             return
         }
 
@@ -52,6 +53,12 @@ public class PostProcessor implements Processor {
 
         if (url != '')
             logProcess(postFilePath)
+        else {
+            exchange.in.setHeader("CamelHttpMethod", "stop-omd-file-has-no-image")
+            Logger.logLine(("\nomd file has no image!\n\n"), logFile)
+            return
+        }
+
 
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")

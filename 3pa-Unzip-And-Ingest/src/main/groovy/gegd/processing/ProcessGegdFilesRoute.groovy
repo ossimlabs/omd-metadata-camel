@@ -91,7 +91,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     .when(header("CamelHttpMethod").contains("stop"))
                         .process { exchange ->
                             def filepath = exchange.in.getHeaders().CamelFileAbsolutePath
-                            Logger.logLine(("\n" + exchange.in.getHeaders().CamelFileAbsolutePath + " already staged!\n\n"), logFile)
+                            Logger.logLine(("\nStopped POST process\n\n"), logFile)
                         }
                     .otherwise()
                         .doTry()
