@@ -31,28 +31,14 @@ public class PostProcessor implements Processor {
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-
-        println "#"*80
-        println "INSIDE POST PROCESSOR"
-        println "#"*80
-
         ArrayList<Map> postMapList = new ArrayList<>()
         def ant = new AntBuilder()
         def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
         def filepathNoExtension = filePath.substring(0, filePath.lastIndexOf("."))
         String url = ''
         String postFilePath = ''
-        File hisFile = new File("${filepathNoExtension}.his")
 
-        if (hisFile.exists()) {
-            println "-"*80
-            println "his file exists"
-            println "${filepathNoExtension}.his"
-            println "-"*80
-            exchange.in.setHeader("CamelHttpMethod", "stop-his-file-already-exists")
-            Logger.logLine(("\n${filepathNoExtension}.his already staged!\n\n"), logFile)
-            return
-        }
+        ant.move(file:"${filePath}", tofile:"${filepathNoExtension}.omd") {}
 
         for (e in extensions) {
             postFilePath = "${filepathNoExtension}.${e}"
@@ -60,17 +46,7 @@ public class PostProcessor implements Processor {
             url = postFile.exists() ? "${urlPrefix}${postFilePath}${urlSuffix}" : url
         }
 
-        if (url != '')
-            logProcess(postFilePath)
-        else {
-            println "@"*80
-            println "no image for omd file"
-            println "@"*80
-            exchange.in.setHeader("CamelHttpMethod", "stop-omd-file-has-no-image")
-            Logger.logLine(("\nomd file has no image!\n\n"), logFile)
-            return
-        }
-
+        logProcess(postFilePath)
 
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")
