@@ -31,17 +31,12 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 10
           volumeMounts:
-            - mountPath: /3pa-blacksky
+            - mountPath: /maxar-blacksky-data
               name: blacksky-data
-            - mountPath: /3pa-skysat
-              name: skysat-data
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
             claimName: gegd-processing-blacksky-data-pvc
-        - name: skysat-data
-          persistentVolumeClaim:
-            claimName: gegd-processing-skysat-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -56,14 +51,14 @@ data:
         logFile: 'logs.txt'
       post:
         url:
-          prefix: 'http://omar-stager-app:8080/omar-stager/dataManager/addRaster?filename='
+          prefix: 'https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename='
           suffix: '&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax'
       mounts:
-        - bucket: 3pa-blacksky
+        - bucket: maxar-blacksky-data
           ingestDirectory: ingest
           archiveDirectory: archive
           unzipDirectory: unzipped
-        - bucket: 3pa-skysat
+        - bucket: maxar-skysat-data
           ingestDirectory: ingest
           archiveDirectory: archive
           unzipDirectory: unzipped
