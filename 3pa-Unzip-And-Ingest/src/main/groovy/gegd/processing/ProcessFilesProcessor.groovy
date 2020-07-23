@@ -79,8 +79,8 @@ public class ProcessFilesProcessor implements Processor {
             def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
             if (extensions.contains(extension)) {
                 def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
-                def postFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + extension
-                postFilename = "${this.processedDirectory}${postFilename}"
+                def postFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + "." + extension
+                postFilename = "/${mount.bucket}/${this.processedDirectory}${postFilename}"
                 omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: postFilename])
             }
         }
