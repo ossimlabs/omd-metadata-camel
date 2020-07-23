@@ -5,7 +5,7 @@ import org.apache.camel.Processor
 import org.apache.camel.Exchange
 
 /**
- * Processor to move files based on a metadata.json file 
+ * Processor to move files based on a metadata.json file
  * and create an omd file for each matched file to be ingested.
  */
 public class ProcessFilesProcessor implements Processor {
@@ -18,7 +18,7 @@ public class ProcessFilesProcessor implements Processor {
 
     private def ant = new AntBuilder()
 
-    
+
     private String omdBody // File content for the omd file created from the metadata
     private String id // Image id gathered from the metadata
     private String processedDirectory // Final directory location for ingest files
@@ -36,7 +36,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Processes the incoming exchange. Moves files to processed directory and creates the omd file.
-     * 
+     *
      * @param exchange The exchange containing the metadata.json file passed into this process
      */
     public void process(Exchange exchange) throws Exception {
@@ -47,7 +47,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Initialize metadata-dependent class variables.
-     * 
+     *
      * @param json Json object from the metadata.json file
      */
     private void initialize(json) {
@@ -58,7 +58,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Moves unzipped files into processed directory and creates needed omd files.
-     * 
+     *
      * @param exchange The exchange passed into this process
      * @param json Json object from the metadata.json file
      */
@@ -79,18 +79,20 @@ public class ProcessFilesProcessor implements Processor {
             def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
             if (extensions.contains(extension)) {
                 def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
-                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: path])
+                def postFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + extension
+                postFilename = "${this.processedDirectory}${postFilename}"
+                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: postFilename])
             }
         }
 
         logProcess(size, scanner, this.id, relativePath, "/${mount.bucket}/${this.processedDirectory}")
         logOmd(omdFiles)
-    
+
         ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/") {
             fileset(dir:"${relativePath}/") {
                 include(name:"${this.id}*")
             }
-        } 
+        }
 
         ant.chmod(perm:"777", type:"file") {
             fileset(dir:"/${mount.bucket}/${this.processedDirectory}/") {
@@ -105,7 +107,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Create the processed directory based on the json in the metadata file.
-     * 
+     *
      * @param json Json from the metadata.json file
      * @return String that is the processed directory
      */
@@ -124,8 +126,8 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Create the string to populate the omd files relating to this set of images.
-     * 
-     * @param json 
+     *
+     * @param json
      * @param omdKeyMapList
      * @return String to populate the omd files
      */
@@ -143,7 +145,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Get the new metadata value name for the given value from valueMapList.
-     * 
+     *
      * @param oldValue The old metadata value expected to be changed.
      * @param valueMapList The list of maps, mapping old metadata values to their new, desired values.
      * @return String to replace the old metadata value.
@@ -155,7 +157,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Find the first key/value map contained in a json object from a list of keys.
-     * 
+     *
      * @param json The json object to search through.
      * @param keys The list of keys to find a potential match in the json object.
      * @return Map contained in the json object or null if no match was found.
@@ -171,7 +173,7 @@ public class ProcessFilesProcessor implements Processor {
 
     /**
      * Find the value of the first instance of a key in a json object.
-     * 
+     *
      * @param json The json object to search through.
      * @param searchKey The key to be searched for in the json object.
      * @return String of the value of the key found in the json object or null if the key doesn't exist.
@@ -195,12 +197,12 @@ public class ProcessFilesProcessor implements Processor {
         String body = ""
         for (f in scanner)
             body += f.getAbsolutePath().split("/").last() + "\n"
-        
-        Logger logger = new Logger("Processor", "ProcessFiles", 
-                                   "Found metadata file for processing", 
-                                   "Copying ${size} files with image_id: ${id} from ${from} to ${to}:", 
+
+        Logger logger = new Logger("Processor", "ProcessFiles",
+                                   "Found metadata file for processing",
+                                   "Copying ${size} files with image_id: ${id} from ${from} to ${to}:",
                                    body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
-        
+
         logger.log()
     }
 
@@ -209,8 +211,8 @@ public class ProcessFilesProcessor implements Processor {
         for (f in omdFiles)
             body += f.filename + "\n"
 
-        Logger logger = new Logger("Processor", "ProcessFiles", 
-                                   "Creating omd files", 
+        Logger logger = new Logger("Processor", "ProcessFiles",
+                                   "Creating omd files",
                                    "Omd files to create:",
                                    body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
 
