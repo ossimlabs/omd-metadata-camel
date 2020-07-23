@@ -8,18 +8,16 @@ public class PostProcessor implements Processor {
     private Map mount
     private String urlPrefix
     private String urlSuffix
-    private String[] extensions
 
     private File logFile
 
     /**
      * Constructor.
      */
-    public PostProcessor(mount, urlPrefix, urlSuffix, extensions) {
+    public PostProcessor(mount, urlPrefix, urlSuffix) {
         this.mount = mount
         this.urlPrefix = urlPrefix
         this.urlSuffix = urlSuffix
-        this.extensions = extensions
         this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
     }
 
@@ -31,21 +29,16 @@ public class PostProcessor implements Processor {
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-        def ant = new AntBuilder()
-        def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
-        def filepathNoExtension = filePath.substring(0, filePath.lastIndexOf("."))
-        String url = ''
-        String postFilePath = ''
+        def map = exchange.in.getBody(Map.class)
 
-        ant.move(file:"${filePath}", tofile:"${filepathNoExtension}.omd") {}
+        File omdFile = new File("/${mount.bucket}/${map.filename}")
+        String url = this.urlPrefix + map.postFilename + this.urlSuffix
 
-        for (e in extensions) {
-            postFilePath = "${filepathNoExtension}.${e}"
-            File postFile = new File(postFilePath)
-            url = postFile.exists() ? "${urlPrefix}${postFilePath}${urlSuffix}" : url
+        omdFile.withWriter { writer ->
+            writer.write(map.body)
         }
 
-        logProcess(postFilePath)
+        logProcess(map.postFilename)
 
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")

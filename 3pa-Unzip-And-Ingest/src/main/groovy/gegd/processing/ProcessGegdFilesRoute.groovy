@@ -60,7 +60,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
 
         Processor processFilesProcessor = new ProcessFilesProcessor(mount, dateKeys, omdKeyMapList, extensions)
         Processor unzipProcessor = new UnzipProcessor(mount)
-        Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix, extensions)
+        Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix)
 
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
@@ -78,24 +78,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
             .filter(header("CamelFileName").endsWith("metadata.json"))
             .process(processFilesProcessor)
             .split(method(MapSplitter.class))
-            .process { exchange ->
-                Logger.logLine("INSIDE POST AND OMD PROCESSOR", logFile)
-                def map = exchange.in.getBody(Map.class)
-
-                File omdFile = new File("/${mount.bucket}/${map.filename}")
-                String url = this.urlPrefix + map.postFilename + this.urlSuffix
-
-                omdFile.withWriter { writer ->
-                    writer.write(map.body)
-                }
-
-                logProcess(map.postFilename, logFile)
-
-                exchange.in.setHeader(Exchange.HTTP_URI, url)
-                exchange.in.setHeader("CamelHttpMethod", "POST")
-
-                logHttp(url, logFile)
-            }
+            .process(postProcessor)
             .setBody(constant(null))
             .doTry()
                 .to("http://oldhost")
