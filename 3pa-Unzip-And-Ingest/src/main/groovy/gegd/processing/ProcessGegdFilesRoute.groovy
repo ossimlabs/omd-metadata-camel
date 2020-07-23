@@ -49,64 +49,89 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
-        for (Map mount in mounts) {
-            mount.logFilePath = this.logFilePath
-            File logFile = new File("/${mount.bucket}/${mount.logFilePath}")
-
-            Processor processFilesProcessor = new ProcessFilesProcessor(mount, dateKeys, omdKeyMapList, extensions)
-            Processor unzipProcessor = new UnzipProcessor(mount)
-            Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix, extensions)
-
-            // 1. Grab zip files stored in the mounted buckets and ingest directory.
-            // 2. Unzip the files into a unique, unzipped directory.
-            // 3. Created a done file inside that same directory.
-            from("file:///${mount.bucket}/${mount.ingestDirectory}/?noop=true&maxMessagesPerPoll=1")
-                .filter(header("CamelFileName").endsWith(".zip"))
-                .process(unzipProcessor)
-                .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
-
-            // 1. Grab metadata.json files from the unzipped directory.
-            // 2. Process the image files with the same id found in the metadata.
-            // 3. Merge omd filenames and file bodies into a map and split for processing.
-            // 3. Create an omd file in the processed directory.
-            from("file:///${mount.bucket}/${mount.unzipDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true&doneFileName=done")
-                .filter(header("CamelFileName").endsWith("metadata.json"))
-                .process(processFilesProcessor)
-                .split(method(MapSplitter.class))
-                .process { exchange ->
-                    def map = exchange.in.getBody(Map.class)
-                    
-                    exchange.in.setHeader("CamelFileName", map.filename)
-                    exchange.in.setBody(map.body)
-                }
-                .to("file:///${mount.bucket}/?chmod=777&chmodDirectory=777")
-
-            // Grab omd files found in the processed directory.
-            // Send a POST to omar stager for the correspoinding image file.
-            from("file:///${mount.bucket}/${mount.archiveDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true")
-                .filter(header("CamelFileName").endsWith("post"))
-                .process(postProcessor)
-                .setBody(constant(null)) // Set the exchange body to null so the POST doesn't send the file body.
-                .doTry()
-                    .to("http://oldhost")
-                    .process { exchange ->
-                        Logger logger = new Logger("HTTP", "Response", 
-                                                    "http response from omar-stager", 
-                                                    "Response body:", 
-                                                    exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
-                        // logger.log()
-                    }
-                .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
-                    .process { exchange ->
-                        final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
-                        Logger logger = new Logger("ERROR", "HTTP", 
-                                                    "Error caught when sending POST to omar-stager", 
-                                                    "Error:", 
-                                                    ex.getMessage(), ColorScheme.error, logFile, true)
-                        logger.log()
-                    }
-                .end()
+        for (m in mounts) {
+            doRoute(m)
         }
+    }
+
+    private void doRoute(Map mount) {
+        mount.logFilePath = this.logFilePath
+        File logFile = new File("/${mount.bucket}/${mount.logFilePath}")
+
+        Processor processFilesProcessor = new ProcessFilesProcessor(mount, dateKeys, omdKeyMapList, extensions)
+        Processor unzipProcessor = new UnzipProcessor(mount)
+        Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix, extensions)
+
+        // 1. Grab zip files stored in the mounted buckets and ingest directory.
+        // 2. Unzip the files into a unique, unzipped directory.
+        // 3. Created a done file inside that same directory.
+        from("file:///${mount.bucket}/${mount.ingestDirectory}/?noop=true&maxMessagesPerPoll=1")
+            .filter(header("CamelFileName").endsWith(".zip"))
+            .process(unzipProcessor)
+            .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
+
+        // 1. Grab metadata.json files from the unzipped directory.
+        // 2. Process the image files with the same id found in the metadata.
+        // 3. Merge omd filenames and file bodies into a map and split for processing.
+        // 3. Create an omd file in the processed directory.
+        from("file:///${mount.bucket}/${mount.unzipDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true&doneFileName=done")
+            .filter(header("CamelFileName").endsWith("metadata.json"))
+            .process(processFilesProcessor)
+            .split(method(MapSplitter.class))
+            .process { exchange ->
+                Logger.logLine("INSIDE POST AND OMD PROCESSOR", logFile)
+                def map = exchange.in.getBody(Map.class)
+
+                File omdFile = new File("/${mount.bucket}/${map.filename}")
+                String url = this.urlPrefix + map.postFilename + this.urlSuffix
+
+                omdFile.withWriter { writer ->
+                    writer.write(map.body)
+                }
+
+                logProcess(map.postFilename, logFile)
+
+                exchange.in.setHeader(Exchange.HTTP_URI, url)
+                exchange.in.setHeader("CamelHttpMethod", "POST")
+
+                logHttp(url, logFile)
+            }
+            .setBody(constant(null))
+            .doTry()
+                .to("http://oldhost")
+                .process { exchange ->
+                    Logger logger = new Logger("HTTP", "Response", 
+                                                "http response from omar-stager", 
+                                                "Response body:", 
+                                                exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
+                    // logger.log()
+                }
+            .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
+                .process { exchange ->
+                    final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
+                    Logger logger = new Logger("ERROR", "HTTP", 
+                                                "Error caught when sending POST to omar-stager", 
+                                                "Error:", 
+                                                ex.getMessage(), ColorScheme.error, logFile, true)
+                    logger.log()
+                }
+    }
+
+    private void logHttp(url, logFile) {
+        Logger logger = new Logger("HTTP", "POST", 
+                                   "Sending https post to Omar Stager", 
+                                   "POST URL:",
+                                   url, ColorScheme.http, logFile, false, ConsoleColors.WHITE)
+        logger.log()
+    }
+
+    private void logProcess(postFilePath, logFile) {
+        Logger logger = new Logger("Merge", "PostProcessor", 
+                                   "Found omd file of image file to be posted", 
+                                   "File found for POST operation:", 
+                                   postFilePath.split('/').last(), ColorScheme.splitter, 
+                                   logFile, false, ConsoleColors.FILENAME)
+        logger.log()
     }
 }
 

@@ -31,7 +31,6 @@ public class PostProcessor implements Processor {
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-        ArrayList<Map> postMapList = new ArrayList<>()
         def ant = new AntBuilder()
         def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
         def filepathNoExtension = filePath.substring(0, filePath.lastIndexOf("."))

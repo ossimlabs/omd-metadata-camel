@@ -78,8 +78,8 @@ public class ProcessFilesProcessor implements Processor {
             def path = f.getAbsolutePath()
             def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
             if (extensions.contains(extension)) {
-                def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd-post"
-                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody])
+                def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
+                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: path])
             }
         }
 
