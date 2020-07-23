@@ -13,7 +13,7 @@ import org.apache.camel.Exchange
 import org.apache.camel.Handler
 
 @Singleton
-class ProcessGegdFilesRoute extends RouteBuilder {    
+class ProcessGegdFilesRoute extends RouteBuilder {
 
     @Value('${app.logging.logFile}')
     String logFilePath
@@ -45,7 +45,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     String[] extensions
 
     @Override
-    public void configure() throws Exception 
+    public void configure() throws Exception
     {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
