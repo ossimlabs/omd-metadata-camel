@@ -50,7 +50,7 @@ public class PostProcessor implements Processor {
         Logger logger = new Logger("HTTP", "POST",
                                    "Sending https post to Omar Stager",
                                    "POST URL:",
-                                   url, ColorScheme.http, logFile, false, ConsoleColors.WHITE)
+                                   url, ColorScheme.http, logFile, true, ConsoleColors.WHITE)
         logger.log()
     }
 

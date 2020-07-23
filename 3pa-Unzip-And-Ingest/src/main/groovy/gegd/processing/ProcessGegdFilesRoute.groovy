@@ -74,6 +74,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 2. Process the image files with the same id found in the metadata.
         // 3. Merge omd filenames and file bodies into a map and split for processing.
         // 3. Create an omd file in the processed directory.
+        // 4. Send post
         from("file:///${mount.bucket}/${mount.unzipDirectory}/?noop=true&maxMessagesPerPoll=1&recursive=true&doneFileName=done")
             .filter(header("CamelFileName").endsWith("metadata.json"))
             .process(processFilesProcessor)
@@ -98,23 +99,6 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                                                 ex.getMessage(), ColorScheme.error, logFile, true)
                     logger.log()
                 }
-    }
-
-    private void logHttp(url, logFile) {
-        Logger logger = new Logger("HTTP", "POST", 
-                                   "Sending https post to Omar Stager", 
-                                   "POST URL:",
-                                   url, ColorScheme.http, logFile, false, ConsoleColors.WHITE)
-        logger.log()
-    }
-
-    private void logProcess(postFilePath, logFile) {
-        Logger logger = new Logger("Merge", "PostProcessor", 
-                                   "Found omd file of image file to be posted", 
-                                   "File found for POST operation:", 
-                                   postFilePath.split('/').last(), ColorScheme.splitter, 
-                                   logFile, false, ConsoleColors.FILENAME)
-        logger.log()
     }
 }
 
