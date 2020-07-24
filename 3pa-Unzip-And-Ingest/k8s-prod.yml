@@ -38,10 +38,10 @@ spec:
       volumes:
         - name: blacksky-data
           persistentVolumeClaim:
-            claimName: gegd-processing-blacksky-data-pvc
+            claimName: 3pa-unzip-and-ingest-blacksky-data-pvc
         - name: skysat-data
           persistentVolumeClaim:
-            claimName: gegd-processing-skysat-data-pvc
+            claimName: 3pa-unzip-and-ingest-skysat-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
