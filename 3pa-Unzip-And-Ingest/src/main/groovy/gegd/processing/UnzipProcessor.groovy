@@ -78,8 +78,11 @@ public class UnzipProcessor implements Processor {
     }
 
     private void logDone(filename) {
+        String subtitle = "Create done file in same directory as metadata.json file"
+        if (filename == 'badDoneFile')
+            subtitle = "Creating bad done file. No metadata.json file was found"
         Logger logger = new Logger("Processor", "UnzipProcessor", 
-                                   "Create done file in same directory as metadata.json file", 
+                                   subtitle, 
                                    "Done file name:", 
                                    filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
         logger.log()
