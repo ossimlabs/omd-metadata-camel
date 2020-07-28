@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.appName }}"
+  labels:
+    app: "{{ .Values.appName }}"
+data:
+  application.yaml: |-
+    app:
+      post:
+        url:
+          prefix: {{ .Values.configmap.post.url.prefix }}
+          suffix: {{ .Values.configmap.post.url.suffix }}
+      mounts: {{ .Values.configmap.mounts }}
+      parsing:
+        dateKeys: {{ .Values.configmap.dateKeys }}
+        omdKeyMapList: {{ .Values.configmap.omdKeyMapList }}
+      fileExtensions: {{ .Values.configmap.fileExtensions }}

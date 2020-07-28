@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "unzip-and-ingest"
+spec:
+  selector:
+    matchLabels:
+      app: "unzip-and-ingest"
+  template:
+    metadata:
+      labels:
+        app: "unzip-and-ingest"
+    spec:
+      containers:
+        - name: "unzip-and-ingest"
+          image: "nexus-docker-public-hosted.ossim.io/unzip-and-ingest"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+          volumeMounts:
+            - mountPath: /3pa-blacksky
+              name: blacksky-data
+            - mountPath: /3pa-skysat
+              name: skysat-data
+      volumes:
+        - name: blacksky-data
+          persistentVolumeClaim:
+            claimName: unzip-and-ingest-blacksky-data-pvc
+        - name: skysat-data
+          persistentVolumeClaim:
+            claimName: unzip-and-ingest-skysat-data-pvc
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unzip-and-ingest
+  labels:
+    app: unzip-and-ingest
+data:
+  application.yaml: |-
+    app:
+      logging:
+        logFile: 'logs.txt'
+      post:
+        url:
+          prefix: 'http://omar-stager-app:8080/omar-stager/dataManager/addRaster?filename='
+          suffix: '&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax'
+      mounts:
+        - bucket: 3pa-blacksky
+          ingestDirectory: ingest
+          archiveDirectory: archive
+          unzipDirectory: unzipped
+        - bucket: 3pa-skysat
+          ingestDirectory: ingest
+          archiveDirectory: archive
+          unzipDirectory: unzipped
+      parsing:
+        dateKeys:
+          - acquisitionDate
+          - acquired
+        omdKeyMapList:
+          - key: mission_id
+            oldKeys:
+              - provider
+              - sensorName
+            values:
+              - oldValue: gegd
+                newValue: SkySat
+              - oldValue: skysat
+                newValue: SkySat
+              - oldValue: Global-1
+                newValue: BlackSky
+              - oldValue: Global-2
+                newValue: BlackSky
+              - oldValue: Global-3
+                newValue: BlackSky
+              - oldValue: Global-4
+                newValue: BlackSky
+              - oldValue: Global-5
+                newValue: BlackSky
+              - oldValue: Global-6
+                newValue: BlackSky
+              - oldValue: Global-7
+                newValue: BlackSky
+              - oldValue: Global-8
+                newValue: BlackSky
+              - oldValue: Global-9
+                newValue: BlackSky
+              - oldValue: Global-10
+                newValue: BlackSky
+      fileExtensions:
+        - ntf
+        - ntif
