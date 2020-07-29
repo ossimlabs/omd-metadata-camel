@@ -7,12 +7,26 @@ metadata:
 data:
   application.yaml: |-
     app:
+      logging:
+        logFile: {{ .Values.configmap.logging.logFile }}
       post:
         url:
           prefix: {{ .Values.configmap.post.url.prefix }}
-          suffix: {{ .Values.configmap.post.url.suffix }}
-      mounts: {{ .Values.configmap.mounts }}
+          suffix: {{ .Values.configmap.post.url.suffix | quote }}
+      mounts:
+        {{- range .Values.configmap.mounts }}
+          - {{ . }}
+        {{- end }}
       parsing:
-        dateKeys: {{ .Values.configmap.dateKeys }}
-        omdKeyMapList: {{ .Values.configmap.omdKeyMapList }}
-      fileExtensions: {{ .Values.configmap.fileExtensions }}
+        dateKeys:
+          {{- range .Values.configmap.parsing.dateKeys }}
+            - {{ . }}
+          {{- end }}
+        omdKeyMapList:
+          {{- range .Values.configmap.parsing.omdKeyMapList }}
+            - {{ . }}
+          {{- end }}
+      fileExtensions:
+        {{- range .Values.configmap.fileExtensions }}
+          - {{ . }}
+        {{- end }}

@@ -1,4 +1,4 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
 
 import org.apache.camel.Processor
 import org.apache.camel.Exchange

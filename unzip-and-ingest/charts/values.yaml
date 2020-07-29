@@ -28,10 +28,12 @@ volumeNameSkysat: skysat-data
 volumeMountPathSkysat: /maxar-skysat-data
 
 configmap:
+  logging:
+    logFile: "logs.txt"
   post:
     url:
-      prefix: 'https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename='
-      suffix: '&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax'
+      prefix: "https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename="
+      suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
   mounts:
     - bucket: maxar-blacksky-data
       ingestDirectory: ingest

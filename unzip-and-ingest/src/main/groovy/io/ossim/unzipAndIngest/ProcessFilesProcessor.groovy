@@ -1,4 +1,4 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
 
 import groovy.json.JsonSlurper
 import org.apache.camel.Processor

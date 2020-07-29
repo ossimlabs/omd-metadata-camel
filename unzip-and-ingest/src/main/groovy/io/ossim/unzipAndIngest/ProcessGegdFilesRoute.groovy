@@ -1,4 +1,4 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
 
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 
@@ -49,9 +49,9 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
-        for (m in mounts) {
-            doRoute(m)
-        }
+        // for (m in mounts) {
+        //     doRoute(m)
+        // }
     }
 
     private void doRoute(Map mount) {
@@ -65,7 +65,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
         // 3. Created a done file inside that same directory.
-        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=10&noop=true")
+        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&delete=true")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
             .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
@@ -75,7 +75,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 3. Merge omd filenames and file bodies into a map and split for processing.
         // 3. Create an omd file in the processed directory.
         // 4. Send post
-        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=10&recursive=true&doneFileName=done&noop=true")
+        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&delete=true")
             .filter(header("CamelFileName").endsWith("metadata.json"))
             .process(processFilesProcessor)
             .split(method(MapSplitter.class))

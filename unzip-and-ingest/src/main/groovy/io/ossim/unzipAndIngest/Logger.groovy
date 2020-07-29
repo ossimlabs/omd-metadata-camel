@@ -1,4 +1,5 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
+
 import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
 

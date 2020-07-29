@@ -53,7 +53,7 @@ dependencies {
 
 test.classpath += configurations.developmentOnly
 
-mainClassName = "gegd.processing.Application"
+mainClassName = "io.ossim.unzipAndIngest.Application"
 
 jib {
     from {

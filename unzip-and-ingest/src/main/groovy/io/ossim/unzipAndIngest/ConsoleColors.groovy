@@ -1,4 +1,4 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
 
 public class ConsoleColors {
     // Reset

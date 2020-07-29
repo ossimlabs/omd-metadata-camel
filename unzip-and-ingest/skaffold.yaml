@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2beta4
+apiVersion: skaffold/v2beta5
 kind: Config
 metadata:
   name: unzip-and-ingest
@@ -7,26 +7,10 @@ build:
   - image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
     jib: {}
   tagPolicy:
-    sha256: {}
+    gitCommit: {}
 deploy:
-  kubectl:
-    manifests:
-    - k8s-dev.yml
-    # - k8s-prod.yml
+  helm:
+    releases:
+    - name: unzip-and-ingest
+      chartPath: charts
 
-# HELM DEPLOYMENT CONFIGURATION
-# apiVersion: skaffold/v2beta5
-# kind: Config
-# metadata:
-#   name: unzip-and-ingest
-# build:
-#   artifacts:
-#   - image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
-#     jib: {}
-#   tagPolicy:
-#     gitCommit: {}
-# deploy:
-#   helm:
-#     releases:
-#     - name: unzip-and-ingest
-#       chartPath: charts

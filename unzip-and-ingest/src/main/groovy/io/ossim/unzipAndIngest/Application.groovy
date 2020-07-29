@@ -1,4 +1,5 @@
-package gegd.processing
+package io.ossim.unzipAndIngest
+
 import groovy.transform.CompileStatic
 import io.micronaut.runtime.Micronaut
 import io.micronaut.runtime.event.annotation.EventListener
@@ -8,6 +9,8 @@ import io.micronaut.scheduling.annotation.Async
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.support.SimpleRegistry
+
+import org.apache.camel.Exchange
 
 class Application {
 
