@@ -34,12 +34,12 @@ spec:
           volumeMounts:
             - mountPath: "{{ .Values.volumeMountPathBlackSky }}"
               name: "{{ .Values.volumeNameBlacksky }}"
-#            - mountPath: {{ .Values.volumeMountPathSkysat }}
-#              name: {{ .Values.volumeNameSkysat }}
+            - mountPath: "{{ .Values.volumeMountPathSkysat }}"
+              name: "{{ .Values.volumeNameSkysat }}"
       volumes:
         - name: "{{ .Values.volumeNameBlacksky }}"
           persistentVolumeClaim:
             claimName: "{{ .Values.appName }}-{{ .Values.volumeNameBlacksky }}-pvc"
-#        - name: {{ .Values.volumeNameSkysat }}
-#          persistentVolumeClaim:
-#            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pvc"
+        - name: "{{ .Values.volumeNameSkysat }}"
+          persistentVolumeClaim:
+            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pvc"

@@ -1,27 +1,29 @@
-# 3pa Unzip and Ingest
-Micronaut Deployment of Apache Camel for processing incoming GEGD data.
+# unzip-and-ingest
 
----
+#### Purpose:
+Watches an ingest directory for zip files and stages the imagery files.
 
-### Step by Step Process
-This camel hump is the second of two stages in processing GEGD data.
-After the first stage, zipped imagery files will be placed into a
-temprary directory for this stage to pick up and process
 
-1. Unzip imagery files into `unzipDirectory` for processing.
-2. Grab `metadata.json` files and move all files with matching image id's into sorted directory.
-3. Create `.omd` files for each desired imagery files. *(ie. `ntf` files)*
-4. Look for `.omd` files and send POST to omar stager for each corresponding imagery file. 
-5. Cross the Sahara Desert
+#### Deploying:
 
----
+###### Requirements
+* [Helm](https://helm.sh/docs/intro/install/)
+###### Optional
+* [Skaffold](https://skaffold.dev/docs/install/)
 
-### Configmap Variables
+_Note_: The application can be deployed using vanilla Helm, or Skaffold which uses Helm under the hood.  Skaffold
+allows for rapid deployment capabilities while developing.
 
-Variable     | Description
------------- | -----------
-`app.post.url.prefix` | Everything before the filename for the stager POST url
-`app.post.url.suffix` | Everything after the filename for the stager POST url
-`app.mounts` | Contains the bucket specific information for the ingest workflow
-`app.parsing` | Contains lists and maps for parsing the `metadata.json` files to create omd files
----
+###### Mandatory Steps
+1. Log into Kubernetes environment: `gimme-aws-creds`
+2. Log into Docker: `docker login <DOCKER_REPOSITORY>`
+
+###### Helm only
+`helm install <HELM_DEPLOY_NAME> chart`
+
+###### Skaffold with Helm
+
+`skaffold dev` Uses Helm to deploy to Kubernetes. However, Skaffold is set to monitor any code or config changes, and
+automatically redeploys the application with the new changes.
+
+`skaffold run` Uses Helm to deploy to Kubernetes.  This is the same as the vanilla Helm install. 

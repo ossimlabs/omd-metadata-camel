@@ -20,7 +20,6 @@ nfs:
 
 storage: 16G
 
-
 volumeNameBlacksky: blacksky-data
 volumeMountPathBlackSky: /maxar-blacksky-data
 
