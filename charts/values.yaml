@@ -20,11 +20,11 @@ nfs:
 
 storage: 16G
 
-volumeNameBlacksky: blacksky-data
-volumeMountPathBlackSky: /3pa-blacksky
+volumeNameBlacksky: maxar-blacksky-data
+volumeMountPathBlackSky: /maxar-blacksky-data
 
-volumeNameSkysat: skysat-data
-volumeMountPathSkysat: /3pa-skysat
+volumeNameSkysat: maxar-skysat-data
+volumeMountPathSkysat: /maxar-skysat-data
 
 configmap:
   logging:
@@ -34,11 +34,11 @@ configmap:
       prefix: "https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename="
       suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
   mounts:
-    - bucket: maxar-blacksky-data
+    - bucket: 3pa-blacksky
       ingestDirectory: ingest
       archiveDirectory: archive
       unzipDirectory: unzipped
-    - bucket: maxar-skysat-data
+    - bucket: 3pa-skysat
       ingestDirectory: ingest
       archiveDirectory: archive
       unzipDirectory: unzipped

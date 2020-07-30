@@ -1,0 +1,24 @@
+nfs:
+  server: 10.100.40.114
+
+storage: 500G
+
+volumeMountPathBlackSky: /3pa-blacksky
+volumeMountPathSkysat: /3pa-skysat
+
+configmap:
+  logging:
+    logFile: "logs.txt"
+  post:
+    url:
+      prefix: "http://omar-stager-app:8080/omar-stager/dataManager/addRaster?filename="
+      suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
+  mounts:
+    - bucket: 3pa-blacksky
+      ingestDirectory: ingest
+      archiveDirectory: archive
+      unzipDirectory: unzipped
+    - bucket: 3pa-skysat
+      ingestDirectory: ingest
+      archiveDirectory: archive
+      unzipDirectory: unzipped

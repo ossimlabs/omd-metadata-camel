@@ -9,7 +9,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    path: /maxar-blacksky-data
+    path: "{{ .Values.volumeMountPathBlackSky }}"
     server:  "{{ .Values.nfs.server }}"
   persistentVolumeReclaimPolicy: Retain
 
@@ -39,7 +39,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    path: /maxar-skysat-data
+    path: "{{ .Values.volumeMountPathSkySat }}"
     server: "{{ .Values.nfs.server }}"
   persistentVolumeReclaimPolicy: Retain
 

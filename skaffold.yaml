@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2beta5
+apiVersion: skaffold/v2beta4
 kind: Config
 metadata:
   name: unzip-and-ingest
@@ -9,8 +9,13 @@ build:
   tagPolicy:
     gitCommit: {}
 deploy:
-  helm:
-    releases:
-    - name: unzip-and-ingest
-      chartPath: charts
+ kubectl:
+   manifests:
+   - k8s-prod.yml
+
+# deploy:
+#   helm:
+#     releases:
+#     - name: unzip-and-ingest
+#       chartPath: charts
 

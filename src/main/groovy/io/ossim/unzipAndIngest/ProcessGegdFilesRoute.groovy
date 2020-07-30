@@ -49,9 +49,9 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
-        // for (m in mounts) {
-        //     doRoute(m)
-        // }
+        for (m in mounts) {
+            doRoute(m)
+        }
     }
 
     private void doRoute(Map mount) {
