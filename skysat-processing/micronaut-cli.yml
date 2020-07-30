@@ -1,5 +1,0 @@
-profile: service
-defaultPackage: skysat.processing
----
-testFramework: spock
-sourceLanguage: groovy
