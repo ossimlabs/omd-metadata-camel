@@ -68,7 +68,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
-            .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
+            .to("file:///${mount.bucket}/${mount.unzipDirectory}/?fileExist=Ignore")
 
         // 1. Grab metadata.json files from the unzipped directory.
         // 2. Process the image files with the same id found in the metadata.

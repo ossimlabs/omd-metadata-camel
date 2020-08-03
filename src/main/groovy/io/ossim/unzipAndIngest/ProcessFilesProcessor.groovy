@@ -72,14 +72,19 @@ public class ProcessFilesProcessor implements Processor {
             }
         }
 
+        def overwriteScanner = ant.fileScanner {
+            fileset(dir:"/${mount.bucket}/${this.processedDirectory}/") { }
+        }
+
         int size = 0
         for (f in scanner) {
             size++
             def path = f.getAbsolutePath()
             def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
             if (extensions.contains(extension)) {
-                def omdFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + ".omd"
-                def postFilename = path.substring(filePath.lastIndexOf("/"), path.lastIndexOf(".")) + "." + extension
+                String prefix = path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))
+                def omdFilename = prefix + ".omd"
+                def postFilename = prefix + "." + extension
                 postFilename = "/${mount.bucket}/${this.processedDirectory}${postFilename}"
                 omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: postFilename])
             }
@@ -88,7 +93,7 @@ public class ProcessFilesProcessor implements Processor {
         logProcess(size, scanner, this.id, relativePath, "/${mount.bucket}/${this.processedDirectory}")
         logOmd(omdFiles)
 
-        ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/") {
+        ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/", overwrite:"false", granularity:"9223372036854") {
             fileset(dir:"${relativePath}/") {
                 include(name:"${this.id}*")
             }
