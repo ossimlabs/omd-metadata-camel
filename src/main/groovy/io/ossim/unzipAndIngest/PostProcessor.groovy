@@ -34,8 +34,12 @@ public class PostProcessor implements Processor {
         File omdFile = new File("/${mount.bucket}/${map.filename}")
         String url = this.urlPrefix + map.postFilename + this.urlSuffix
 
-        omdFile.withWriter { writer ->
-            writer.write(map.body)
+        if (omdFile.exists()) {
+            logOmdExists(map.filename)
+        } else {
+            omdFile.withWriter { writer ->
+                writer.write(map.body)
+            }
         }
 
         logProcess(map.postFilename)
@@ -59,6 +63,15 @@ public class PostProcessor implements Processor {
                                    "Found omd file of image file to be posted",
                                    "File found for POST operation:",
                                    postFilePath.split('/').last(), ColorScheme.splitter,
+                                   logFile, true, ConsoleColors.FILENAME)
+        logger.log()
+    }
+
+    private void logOmdExists(filename) {
+        Logger logger = new Logger("Omd", "PostProcessor",
+                                   "Found duplicate omd file",
+                                   "Filename:",
+                                   filename, ColorScheme.splitter,
                                    logFile, true, ConsoleColors.FILENAME)
         logger.log()
     }
