@@ -201,7 +201,7 @@ public class ProcessFilesProcessor implements Processor {
         Logger logger = new Logger("Processor", "ProcessFiles",
                                    "Found metadata file for processing",
                                    "Copying ${size} files with image_id: ${id} from ${from} to ${to}:",
-                                   body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+                                   body, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
 
         logger.log()
     }
@@ -214,7 +214,7 @@ public class ProcessFilesProcessor implements Processor {
         Logger logger = new Logger("Processor", "ProcessFiles",
                                    "Creating omd files",
                                    "Omd files to create:",
-                                   body, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+                                   body, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
 
         logger.log()
     }

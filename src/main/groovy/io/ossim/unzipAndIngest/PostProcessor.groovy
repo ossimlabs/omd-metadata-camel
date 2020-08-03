@@ -59,7 +59,7 @@ public class PostProcessor implements Processor {
                                    "Found omd file of image file to be posted",
                                    "File found for POST operation:",
                                    postFilePath.split('/').last(), ColorScheme.splitter,
-                                   logFile, false, ConsoleColors.FILENAME)
+                                   logFile, true, ConsoleColors.FILENAME)
         logger.log()
     }
 }

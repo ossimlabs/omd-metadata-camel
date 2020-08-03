@@ -73,7 +73,7 @@ public class UnzipProcessor implements Processor {
         Logger logger = new Logger("Processor", "UnzipProcessor", 
                                    "Unzipping file for processing", 
                                    "File being unzipped:", 
-                                   filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+                                   filename, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
         logger.log()
     }
 
@@ -84,7 +84,7 @@ public class UnzipProcessor implements Processor {
         Logger logger = new Logger("Processor", "UnzipProcessor", 
                                    subtitle, 
                                    "Done file name:", 
-                                   filename, ColorScheme.route, logFile, false, ConsoleColors.FILENAME)
+                                   filename, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
         logger.log()
     }
 }
