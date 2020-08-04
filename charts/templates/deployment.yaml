@@ -33,13 +33,13 @@ spec:
             failureThreshold: 10
           volumeMounts:
             - mountPath: "{{ .Values.volumeMountPathBlackSky }}"
-              name: "{{ .Values.volumeNameBlacksky }}"
-            - mountPath: "{{ .Values.volumeMountPathSkysat }}"
-              name: "{{ .Values.volumeNameSkysat }}"
+              name: "{{ .Values.volumeNameBlackSky }}"
+            - mountPath: "{{ .Values.volumeMountPathSkySat }}"
+              name: "{{ .Values.volumeNameSkySat }}"
       volumes:
-        - name: "{{ .Values.volumeNameBlacksky }}"
+        - name: "{{ .Values.volumeNameBlackSky }}"
           persistentVolumeClaim:
-            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameBlacksky }}-pvc"
-        - name: "{{ .Values.volumeNameSkysat }}"
+            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pvc"
+        - name: "{{ .Values.volumeNameSkySat }}"
           persistentVolumeClaim:
-            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pvc"
+            claimName: "{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pvc"

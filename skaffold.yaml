@@ -8,14 +8,16 @@ build:
     jib: {}
   tagPolicy:
     gitCommit: {}
-deploy:
- kubectl:
-   manifests:
-   - k8s-prod.yml
-
 # deploy:
-#   helm:
-#     releases:
-#     - name: unzip-and-ingest
-#       chartPath: charts
+#  kubectl:
+#    manifests:
+#    - k8s-prod.yml
+
+deploy:
+  helm:
+    releases:
+    - name: unzip-and-ingest
+      chartPath: charts
+      valuesFiles: 
+        - charts/values-3pa.yaml
 

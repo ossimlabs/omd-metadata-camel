@@ -4,7 +4,7 @@ nfs:
 storage: 500G
 
 volumeMountPathBlackSky: /3pa-blacksky
-volumeMountPathSkysat: /3pa-skysat
+volumeMountPathSkySat: /3pa-skysat
 
 configmap:
   logging:
@@ -22,3 +22,40 @@ configmap:
       ingestDirectory: ingest
       archiveDirectory: archive
       unzipDirectory: unzipped
+  parsing:
+    dateKeys:
+      - acquisitionDate
+      - acquired
+    omdKeyMapList:
+      - key: mission_id
+        oldKeys:
+          - provider
+          - sensorName
+        values:
+          - oldValue: gegd
+            newValue: SkySat
+          - oldValue: skysat
+            newValue: SkySat
+          - oldValue: Global-1
+            newValue: BlackSky
+          - oldValue: Global-2
+            newValue: BlackSky
+          - oldValue: Global-3
+            newValue: BlackSky
+          - oldValue: Global-4
+            newValue: BlackSky
+          - oldValue: Global-5
+            newValue: BlackSky
+          - oldValue: Global-6
+            newValue: BlackSky
+          - oldValue: Global-7
+            newValue: BlackSky
+          - oldValue: Global-8
+            newValue: BlackSky
+          - oldValue: Global-9
+            newValue: BlackSky
+          - oldValue: Global-10
+            newValue: BlackSky
+  fileExtensions:
+    - ntf
+    - ntif

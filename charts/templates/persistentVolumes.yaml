@@ -1,11 +1,10 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlacksky }}-pv"
+  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pv"
 spec:
   capacity:
     storage:  "{{ .Values.storage }}"
-
   accessModes:
     - ReadWriteMany
   nfs:
@@ -17,7 +16,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: "{{ .Values.appName }}-{{ .Values.volumeNameBlacksky }}-pvc"
+  name: "{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pvc"
 spec:
   accessModes:
     - ReadWriteMany
@@ -25,13 +24,13 @@ spec:
   resources:
     requests:
       storage: "{{ .Values.storage }}"
-  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlacksky }}-pv"
+  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pv"
 
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pv"
+  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pv"
 spec:
   capacity:
     storage: "{{ .Values.storage }}"
@@ -47,7 +46,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: "{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pvc"
+  name: "{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pvc"
 spec:
   accessModes:
     - ReadWriteMany
@@ -55,4 +54,4 @@ spec:
   resources:
     requests:
       storage: "{{ .Values.storage }}"
-  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkysat }}-pv"
+  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pv"

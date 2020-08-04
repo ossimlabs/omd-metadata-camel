@@ -20,11 +20,11 @@ nfs:
 
 storage: 16G
 
-volumeNameBlacksky: maxar-blacksky-data
+volumeNameBlackSky: maxar-blacksky-data
 volumeMountPathBlackSky: /maxar-blacksky-data
 
-volumeNameSkysat: maxar-skysat-data
-volumeMountPathSkysat: /maxar-skysat-data
+volumeNameSkySat: maxar-skysat-data
+volumeMountPathSkySat: /maxar-skysat-data
 
 configmap:
   logging:
