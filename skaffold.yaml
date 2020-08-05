@@ -7,7 +7,7 @@ build:
   - image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
     jib: {}
   tagPolicy:
-    gitCommit: {}
+    sha256: {}
 # deploy:
 #  kubectl:
 #    manifests:

@@ -8,25 +8,52 @@ data:
   application.yaml: |-
     app:
       logging:
-        logFile: {{ .Values.configmap.logging.logFile }}
+        logFile: "logs.txt"
       post:
         url:
-          prefix: {{ .Values.configmap.post.url.prefix }}
-          suffix: {{ .Values.configmap.post.url.suffix | quote }}
+          prefix: "{{ .Values.configmap.baseUrl }}/omar-stager/dataManager/addRaster?filename="
+          suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
       mounts:
-        {{- range .Values.configmap.mounts }}
-          - {{ . }}
+        {{- range .Values.configmap.mountBuckets }}
+        - bucket: {{ . }}
+          ingestDirectory: ingest
+          archiveDirectory: archive
+          unzipDirectory: unzipped
         {{- end }}
       parsing:
         dateKeys:
-          {{- range .Values.configmap.parsing.dateKeys }}
-            - {{ . }}
-          {{- end }}
+          - acquisitionDate
+          - acquired
         omdKeyMapList:
-          {{- range .Values.configmap.parsing.omdKeyMapList }}
-            - {{ . }}
-          {{- end }}
+          - key: mission_id
+            oldKeys:
+              - provider
+              - sensorName
+            values:
+              - oldValue: gegd
+                newValue: SkySat
+              - oldValue: skysat
+                newValue: SkySat
+              - oldValue: Global-1
+                newValue: BlackSky
+              - oldValue: Global-2
+                newValue: BlackSky
+              - oldValue: Global-3
+                newValue: BlackSky
+              - oldValue: Global-4
+                newValue: BlackSky
+              - oldValue: Global-5
+                newValue: BlackSky
+              - oldValue: Global-6
+                newValue: BlackSky
+              - oldValue: Global-7
+                newValue: BlackSky
+              - oldValue: Global-8
+                newValue: BlackSky
+              - oldValue: Global-9
+                newValue: BlackSky
+              - oldValue: Global-10
+                newValue: BlackSky
       fileExtensions:
-        {{- range .Values.configmap.fileExtensions }}
-          - {{ . }}
-        {{- end }}
+        - ntf
+        - ntif

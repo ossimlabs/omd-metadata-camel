@@ -27,55 +27,7 @@ volumeNameSkySat: maxar-skysat-data
 volumeMountPathSkySat: /maxar-skysat-data
 
 configmap:
-  logging:
-    logFile: "logs.txt"
-  post:
-    url:
-      prefix: "https://omar-3pa-dev.ossim.io/omar-stager/dataManager/addRaster?filename="
-      suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
-  mounts:
-    - bucket: 3pa-blacksky
-      ingestDirectory: ingest
-      archiveDirectory: archive
-      unzipDirectory: unzipped
-    - bucket: 3pa-skysat
-      ingestDirectory: ingest
-      archiveDirectory: archive
-      unzipDirectory: unzipped
-  parsing:
-    dateKeys:
-      - acquisitionDate
-      - acquired
-    omdKeyMapList:
-      - key: mission_id
-        oldKeys:
-          - provider
-          - sensorName
-        values:
-          - oldValue: gegd
-            newValue: SkySat
-          - oldValue: skysat
-            newValue: SkySat
-          - oldValue: Global-1
-            newValue: BlackSky
-          - oldValue: Global-2
-            newValue: BlackSky
-          - oldValue: Global-3
-            newValue: BlackSky
-          - oldValue: Global-4
-            newValue: BlackSky
-          - oldValue: Global-5
-            newValue: BlackSky
-          - oldValue: Global-6
-            newValue: BlackSky
-          - oldValue: Global-7
-            newValue: BlackSky
-          - oldValue: Global-8
-            newValue: BlackSky
-          - oldValue: Global-9
-            newValue: BlackSky
-          - oldValue: Global-10
-            newValue: BlackSky
-  fileExtensions:
-    - ntf
-    - ntif
+  baseUrl: https://omar-3pa-dev.ossim.io
+  mountBuckets:
+    - maxar-blacksky-data
+    - maxar-skysat-data
