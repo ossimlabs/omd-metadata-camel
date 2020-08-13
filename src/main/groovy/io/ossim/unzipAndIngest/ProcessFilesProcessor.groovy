@@ -107,6 +107,12 @@ public class ProcessFilesProcessor implements Processor {
             dirset(dir:"/${mount.bucket}/${this.processedDirectory}") {}
         }
 
+        ant.delete() {
+            fileset(dir:"${relativePath}/") {
+                include(name:"${this.id}*")
+            }
+        }
+
         exchange.in.setBody(omdFiles)
     }
 

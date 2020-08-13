@@ -11,7 +11,7 @@ global:
 
 image:
   name: unzip-and-ingest
-  tag: latest
+  tag: 3pa-hotfix
   pullPolicy: Always
 
 
