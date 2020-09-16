@@ -11,6 +11,7 @@ import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.Handler
+import org.apache.camel.routepolicy.quartz.CronScheduledRoutePolicy;
 
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {
@@ -65,7 +66,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
         // 3. Created a done file inside that same directory.
-        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true")
+        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
             .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
@@ -75,7 +76,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 3. Merge omd filenames and file bodies into a map and split for processing.
         // 3. Create an omd file in the processed directory.
         // 4. Send post
-        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&noop=true")
+        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
             .filter(header("CamelFileName").endsWith("metadata.json"))
             .process(processFilesProcessor)
             .split(method(MapSplitter.class))

@@ -17,7 +17,9 @@ deploy:
   helm:
     releases:
     - name: unzip-and-ingest
-      chartPath: charts
-      valuesFiles: 
-        - charts/values-3pa.yaml
+      chartPath: chart
+      valuesFiles:
+        - chart/values-3pa.yaml
+      artifactOverrides:
+        image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
 

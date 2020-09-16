@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.appName }}"
+  name: {{ .Values.appName }}
 spec:
   selector:
     matchLabels:
-      app: "{{ .Values.appName }}"
+      app: {{ .Values.appName }}
   template:
     metadata:
       labels:
-        app: "{{ .Values.appName }}"
+        app: {{ .Values.appName }}
     spec:
       containers:
-        - name: "{{ .Values.appName }}"
-          image: "{{ .Values.global.dockerRepository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        - name: {{ .Values.appName }}
+          image: "nexus-docker-public-hosted.ossim.io/unzip-and-ingest"
           imagePullPolicy: Always
           ports:
             - name: http
@@ -32,14 +32,14 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 10
           volumeMounts:
-            - mountPath: "{{ .Values.volumeMountPathBlackSky }}"
-              name: "{{ .Values.volumeNameBlackSky }}"
-            - mountPath: "{{ .Values.volumeMountPathSkySat }}"
-              name: "{{ .Values.volumeNameSkySat }}"
+            - mountPath: {{ .Values.volumeMountPathBlackSky }}
+              name: {{ .Values.volumeNameBlackSky }}
+            - mountPath: {{ .Values.volumeMountPathSkySat }}
+              name: {{ .Values.volumeNameSkySat }}
       volumes:
-        - name: "{{ .Values.volumeNameBlackSky }}"
+        - name: {{ .Values.volumeNameBlackSky }}
           persistentVolumeClaim:
             claimName: "{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pvc"
-        - name: "{{ .Values.volumeNameSkySat }}"
+        - name: {{ .Values.volumeNameSkySat }}
           persistentVolumeClaim:
             claimName: "{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pvc"
