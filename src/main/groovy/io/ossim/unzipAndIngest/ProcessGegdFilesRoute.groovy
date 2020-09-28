@@ -69,8 +69,12 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
-            .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
-
+            .choice()
+                .when(body().contains("zipError"))
+                    .to("file:///${mount.bucket}/failed-zips/")
+                .otherwise()
+                    .to("file:///${mount.bucket}/${mount.unzipDirectory}/")
+                    
         // 1. Grab metadata.json files from the unzipped directory.
         // 2. Process the image files with the same id found in the metadata.
         // 3. Merge omd filenames and file bodies into a map and split for processing.

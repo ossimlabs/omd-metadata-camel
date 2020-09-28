@@ -2,6 +2,7 @@ package io.ossim.unzipAndIngest
 
 import org.apache.camel.Processor
 import org.apache.camel.Exchange
+import org.apache.tools.ant.BuildException
 
 public class UnzipProcessor implements Processor {
 
@@ -29,11 +30,26 @@ public class UnzipProcessor implements Processor {
         def prefixDir = srcPath.split("/").last()
         prefixDir = prefixDir.substring(0, prefixDir.lastIndexOf("."))
 
-        logProcess(srcPath)
-
-        this.ant.unzip(  src:"${srcPath}",
+        try {
+            this.ant.unzip(  src:"${srcPath}",
                     dest:"/${mount.bucket}/${mount.unzipDirectory}/${prefixDir}/",
                     overwrite:"false" )
+        }
+        catch( BuildException ex ) {
+            if( ex.exception instanceof IOException ) {
+                this.logError(srcPath, ex.exception.message + "\n\nMoving file to failed-zips directory")
+            }
+            else {
+                this.logError(srcPath, "Could not unzip file.\n\nMoving file to failed-zips directory")
+            }
+
+            ant.move(file:"${srcPath}", todir:"/${mount.bucket}/failed-zips/", overwrite:"false", granularity:"9223372036854") {}
+
+            exchange.in.setHeader("CamelFileName", "zipError")
+            exchange.in.setBody("zipError")
+        }
+
+        logProcess(srcPath)
 
         def scanner = ant.fileScanner {
             fileset(dir:"/${mount.bucket}/${mount.unzipDirectory}/${prefixDir}/") {
@@ -67,6 +83,14 @@ public class UnzipProcessor implements Processor {
                 return path.substring(prefix.length(), path.lastIndexOf("/")) + "/done"
         }
         return "badDoneFile"
+    }
+
+    private void logError(filename, error) {
+        Logger logger = new Logger("ERROR", "HTTP",
+                                                ("Error caught when trying to unzip " + filename),
+                                                "Error:",
+                                                error, ColorScheme.error, logFile, true)
+        logger.log()
     }
 
     private void logProcess(filename) {
