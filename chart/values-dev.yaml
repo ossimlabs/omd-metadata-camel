@@ -1,0 +1,83 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This chart is to be used for standalone deployment
+# for development purposes.  AppName and any configMap
+# should not have the same name as app already deployed
+# in the same namespace by the 3pa parent chart.
+
+replicas: 1
+
+appName: unzip-and-ingest-test
+
+global:
+  dockerRepository: nexus-docker-public-hosted.ossim.io
+  imagePullSecret:
+    registry: nexus-3pa-dev-docker-proxy.ossim.io
+    username: radiantcibot
+    password: lhLvXspFyX9wraf6jB1I
+  hostname: omar-3pa-dev.ossim.io
+
+  createIngress: true
+  useTls: false
+  useTLSClientAuth: false
+  sslCertSecretName: null
+  authSslCertSecretName: null
+
+  createImagePullSecret: true
+  useImagePullSecret: true
+
+  createHpa: true
+  createPVs: true #True to create the pvcs
+  useSpringConfigServer: false
+
+  # This is used in the helper to create the pvcs
+  volumes:
+    maxar-blacksky-data:
+      type: nfs
+      nfsServer: 10.70.40.254
+      nfsMountPoint: /maxar-blacksky-data
+      accessModes:
+        - ReadWriteMany
+      size: 500Gi
+      mountPath: /maxar-blacksky-data
+
+    maxar-skysat-data:
+      type: nfs
+      nfsServer: 10.70.40.254
+      nfsMountPoint: /maxar-skysat-data
+      accessModes:
+        - ReadWriteMany
+      size: 500Gi
+      mountPath: /maxar-skysat-data
+
+# These are used in the helper to create the pvcs, if no mounts are needed remove
+volumeNames:
+  - maxar-blacksky-data
+  - maxar-skysat-data
+
+# This is overwritten by skaffold, if override is specified
+# in the skaffold.yaml
+image:
+  name: unzip-and-ingest
+  tag: 3pa-hotfix
+  pullPolicy: Always
+
+internalPort: 8080
+externalPort: 8080
+
+readinessProbe:
+  path: /health
+  port: 8080
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+livenessProbe:
+  path: /health
+  port: 8080
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 10
+
+
+baseUrl: https://omar-3pa-dev.ossim.io
