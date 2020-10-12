@@ -17,8 +17,8 @@ spec:
         - name:  {{ .Values.appName }}
           env:
           {{- include "unzip-and-ingest.envVars" . | indent 8 }}
-          {{- if .Values.imageName }}
-          image: {{ .Values.imageName }}
+          {{- if .Values.imageSkaffoldOverride }}
+          image: {{ .Values.imageSkaffoldOverride }}
           {{- else }}
           image: "{{ .Values.global.dockerRepository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           {{- end }}

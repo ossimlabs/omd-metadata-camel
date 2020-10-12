@@ -25,5 +25,5 @@ deploy:
         # If you want to use an existing image rather than skaffold's
         # comment this out and specify the image in the values-dev.yaml
         artifactOverrides:
-          imageName: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
+          imageSkaffoldOverride: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
 
