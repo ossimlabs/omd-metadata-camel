@@ -1,57 +1,50 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pv"
-spec:
-  capacity:
-    storage:  "{{ .Values.storage }}"
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    path: "{{ .Values.volumeMountPathBlackSky }}"
-    server:  "{{ .Values.nfs.server }}"
-  persistentVolumeReclaimPolicy: Retain
+{{- if (pluck "createPVs" .Values .Values.global) }}
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: "{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pvc"
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: ""
-  resources:
-    requests:
-      storage: "{{ .Values.storage }}"
-  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameBlackSky }}-pv"
-
+  {{- range $volumeName := .Values.volumeNames }}
+  {{- $volumeDict := index $.Values.global.volumes $volumeName }}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pv"
+  name: "{{ $.Release.Namespace }}-{{ $.Values.appName }}-{{ $volumeName }}-pv"
 spec:
   capacity:
-    storage: "{{ .Values.storage }}"
+    storage: {{ $volumeDict.size }}
 
+  {{- if (len $volumeDict.accessModes) gt 0 }}
   accessModes:
-    - ReadWriteMany
+    {{- range $item := $volumeDict.accessModes }}
+    - {{ $item }}
+    {{- end }}
+  {{- end }}
+
+  {{- if eq $volumeDict.type "nfs" }}
   nfs:
-    path: "{{ .Values.volumeMountPathSkySat }}"
-    server: "{{ .Values.nfs.server }}"
+    path: {{ $volumeDict.nfsMountPoint }}
+    server: {{ $volumeDict.nfsServer }}
+  {{- end }}
   persistentVolumeReclaimPolicy: Retain
 
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: "{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pvc"
+  name: "{{ $.Values.appName }}-{{ $volumeName }}-pvc"
 spec:
+
+  {{- if (len $volumeDict.accessModes) gt 0 }}
   accessModes:
-    - ReadWriteMany
+    {{- range $item := $volumeDict.accessModes }}
+    - {{ $item }}
+    {{- end }}
+  {{- end }}
+
   storageClassName: ""
   resources:
     requests:
-      storage: "{{ .Values.storage }}"
-  volumeName: "{{ $.Release.Namespace }}-{{ .Values.appName }}-{{ .Values.volumeNameSkySat }}-pv"
+      storage: {{ $volumeDict.size }}
+  volumeName: "{{ $.Release.Namespace }}-{{ $.Values.appName }}-{{ $volumeName }}-pv"
+
+  {{- end }}
+  {{- end }}

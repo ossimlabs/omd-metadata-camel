@@ -19,7 +19,7 @@ allows for rapid deployment capabilities while developing.
 2. Log into Docker: `docker login <DOCKER_REPOSITORY>`
 
 ###### Helm only
-`helm install <HELM_DEPLOY_NAME> chart`
+`helm install -f chart/values-dev.yaml <HELM_DEPLOY_NAME> chart`
 
 ###### Skaffold with Helm
 
