@@ -80,6 +80,7 @@ jib {
     }
     containerizingMode = 'packaged'
     container {
+        user = '1001:1001'
         environment = [
             JAVA_APP_DIR: '/app', 
             JAVA_MAIN_CLASS: mainClassName,
