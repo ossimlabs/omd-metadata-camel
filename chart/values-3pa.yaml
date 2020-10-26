@@ -1,0 +1,13 @@
+nfs:
+  server: 10.100.40.114
+
+storage: 500G
+
+volumeMountPathBlackSky: /3pa-blacksky
+volumeMountPathSkySat: /3pa-skysat
+
+configmap:
+  baseUrl: http://omar-stager-app:8080
+  mountBuckets:
+    - 3pa-blacksky
+    - 3pa-skysat

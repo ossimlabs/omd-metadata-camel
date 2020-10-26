@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.appName }}"
+  labels:
+    app: "{{ .Values.appName }}"
+data:
+  application.yaml: |-
+    app:
+      logging:
+        logFile: "logs.txt"
+      post:
+        url:
+          prefix: "{{ .Values.baseUrl }}/omar-stager/dataManager/addRaster?filename="
+          suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
+      mounts: {{- include "unzip-and-ingest.mountBuckets" . | indent 8 }}
+      parsing:
+        dateKeys:
+          - acquisitionDate
+          - acquired
+        omdKeyMapList:
+          - key: mission_id
+            oldKeys:
+              - provider
+              - sensorName
+            values:
+              - oldValue: gegd
+                newValue: SkySat
+              - oldValue: skysat
+                newValue: SkySat
+              - oldValue: Global-1
+                newValue: BlackSky
+              - oldValue: Global-2
+                newValue: BlackSky
+              - oldValue: Global-3
+                newValue: BlackSky
+              - oldValue: Global-4
+                newValue: BlackSky
+              - oldValue: Global-5
+                newValue: BlackSky
+              - oldValue: Global-6
+                newValue: BlackSky
+              - oldValue: Global-7
+                newValue: BlackSky
+              - oldValue: Global-8
+                newValue: BlackSky
+              - oldValue: Global-9
+                newValue: BlackSky
+              - oldValue: Global-10
+                newValue: BlackSky
+      fileExtensions:
+        - ntf
+        - ntif

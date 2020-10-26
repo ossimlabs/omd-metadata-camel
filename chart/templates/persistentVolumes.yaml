@@ -1,0 +1,50 @@
+{{- if (pluck "createPVs" .Values .Values.global) }}
+
+  {{- range $volumeName := .Values.volumeNames }}
+  {{- $volumeDict := index $.Values.global.volumes $volumeName }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ $.Release.Namespace }}-{{ $.Values.appName }}-{{ $volumeName }}-pv"
+spec:
+  capacity:
+    storage: {{ $volumeDict.size }}
+
+  {{- if (len $volumeDict.accessModes) gt 0 }}
+  accessModes:
+    {{- range $item := $volumeDict.accessModes }}
+    - {{ $item }}
+    {{- end }}
+  {{- end }}
+
+  {{- if eq $volumeDict.type "nfs" }}
+  nfs:
+    path: {{ $volumeDict.nfsMountPoint }}
+    server: {{ $volumeDict.nfsServer }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: Retain
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ $.Values.appName }}-{{ $volumeName }}-pvc"
+spec:
+
+  {{- if (len $volumeDict.accessModes) gt 0 }}
+  accessModes:
+    {{- range $item := $volumeDict.accessModes }}
+    - {{ $item }}
+    {{- end }}
+  {{- end }}
+
+  storageClassName: ""
+  resources:
+    requests:
+      storage: {{ $volumeDict.size }}
+  volumeName: "{{ $.Release.Namespace }}-{{ $.Values.appName }}-{{ $volumeName }}-pv"
+
+  {{- end }}
+  {{- end }}

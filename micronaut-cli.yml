@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: io.ossim.unzip-and-ingest
+---
+testFramework: spock
+sourceLanguage: groovy

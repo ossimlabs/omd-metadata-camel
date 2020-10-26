@@ -1,0 +1,55 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+# This values file is used to support the 3pa parent chart
+# deployment. Check that chart to modify these values.
+
+replicas: 1
+
+appName: unzip-and-ingest
+
+global:
+  dockerRepository: nexus-docker-public-hosted.ossim.io
+  imagePullSecret:
+    registry: null
+    username: null
+    password: null
+  hostname: omar-dev.ossim.io
+
+  createIngress: true
+  useTls: false
+  useTLSClientAuth: false
+  sslCertSecretName: null
+  authSslCertSecretName: null
+
+  createImagePullSecret: true
+  useImagePullSecret: true
+
+  createHpa: true
+  createPVs: true
+  useSpringConfigServer: false
+
+image:
+  name: null
+  tag: null
+  pullPolicy: null
+
+internalPort: 8080
+externalPort: 8080
+
+readinessProbe:
+  path: /health
+  port: 8080
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+livenessProbe:
+  path: /health
+  port: 8080
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 10
+
+
+baseUrl: https://omar-3pa-dev.ossim.io
