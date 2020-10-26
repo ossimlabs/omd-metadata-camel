@@ -90,8 +90,9 @@ podTemplate(
 
     stage("Build and push Docker Image") {
       container('docker'){
+                  withGradle {
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
-          withGradle {
+
             script {
               sh './gradlew dockerPush'
             }
