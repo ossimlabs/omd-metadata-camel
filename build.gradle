@@ -61,7 +61,7 @@ jib {
         image = "adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim"
     }
     to {
-        image = "${System.env.DOCKER_IMAGE_PATH}:${System.env.TAG_NAME}"
+        image = 'DOCKER_IMAGE_PATH:TAG_NAME'
     }
     extraDirectories {
         paths {
