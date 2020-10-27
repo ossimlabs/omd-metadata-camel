@@ -93,8 +93,8 @@ podTemplate(
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
           withGradle {
             script {
-              sed -i '' 's/DOCKER_IMAGE_PATH/'$DOCKER_IMAGE_PATH'/g' build.gradle
-              sed -i '' 's/TAG_NAME/'${TAG_NAME}'/g' build.gradle
+              sh 'sed -i '' 's/DOCKER_IMAGE_PATH/'$DOCKER_IMAGE_PATH'/g' build.gradle'
+              sh 'sed -i '' 's/TAG_NAME/'${TAG_NAME}'/g' build.gradle'
               sh './gradlew jibDockerBuild'
             }
           }
