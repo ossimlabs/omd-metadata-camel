@@ -20,12 +20,6 @@ podTemplate(
         privileged: true
     ),
     containerTemplate(
-        image: "maven:3.6.2-jdk-8",
-        name: 'maven',
-        command: 'cat',
-        ttyEnabled: true
-    ),
-    containerTemplate(
         image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/alpine/helm:3.2.3",
         name: 'helm',
         command: 'cat',
@@ -39,6 +33,12 @@ podTemplate(
         envVars: [
             envVar(key: 'HOME', value: '/root')
         ]
+    ),
+    containerTemplate(
+        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.0",
+        name: 'docker-helper',
+        command: 'cat',
+        ttyEnabled: true
     )
   ],
   volumes: [
@@ -89,10 +89,9 @@ podTemplate(
     }
 
     stage("Build and push Docker Image") {
-      container('docker'){
-                  withGradle {
+      container('docker-helper'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
-
+          withGradle {
             script {
               sh './gradlew dockerPush'
             }
