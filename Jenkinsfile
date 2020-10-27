@@ -85,7 +85,7 @@ podTemplate(
           break
       }
 
-      DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/"
+      DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/unzip-and-ingest"
     }
 
     stage("Build Docker Image") {
@@ -94,6 +94,21 @@ podTemplate(
           withGradle {
             script {
               sh './gradlew jibDockerBuild'
+            }
+          }
+        }
+      }
+    }
+
+    stage("Push Docker Image") {
+      container('docker'){
+        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}") {
+          script {
+            sh "docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}"
+
+            if (BRANCH_NAME == "master") {
+              sh  "docker tag ${DOCKER_IMAGE_PATH}:${TAG_NAME} ${DOCKER_IMAGE_PATH}:release"
+              sh  "docker push ${DOCKER_IMAGE_PATH}:release"
             }
           }
         }
