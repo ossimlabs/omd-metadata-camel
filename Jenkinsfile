@@ -88,7 +88,7 @@ podTemplate(
       DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/"
     }
 
-    stage("Build and push Docker Image") {
+    stage("Build Docker Image") {
       container('docker-helper'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
           withGradle {
