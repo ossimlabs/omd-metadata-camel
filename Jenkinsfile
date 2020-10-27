@@ -93,7 +93,7 @@ podTemplate(
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
           withGradle {
             script {
-              sh './gradlew dockerPush'
+              sh './gradlew jibDockerBuild'
             }
           }
         }
