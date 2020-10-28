@@ -35,7 +35,7 @@ podTemplate(
         ]
     ),
     containerTemplate(
-        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.0",
+        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.1",
         name: 'docker-helper',
         ttyEnabled: true,
         command: 'cat',
