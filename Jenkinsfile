@@ -95,6 +95,8 @@ podTemplate(
           withGradle {
             script {
               sh 'ls /usr/lib/'
+              sh 'export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/'
+              sh 'export PATH=$PATH:$JAVA_HOME/bin'
               sh './gradlew jibDockerBuild'
             }
           }
@@ -144,5 +146,3 @@ podTemplate(
     }
   }
 }
-export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/
-export PATH=$PATH:$JAVA_HOME/bin
