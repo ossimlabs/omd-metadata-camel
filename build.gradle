@@ -85,7 +85,7 @@ jib {
         user = '1001:1001'
         environment = [
             JAVA_APP_DIR: '/app', 
-            JAVA_MAIN_CLpASS: mainClassName,
+            JAVA_MAIN_CLASS: mainClassName,
             JAVA_CLASSPATH: '/app/classpath/*:/app/libs/*'
         ]
         ports = ['8080']    
