@@ -92,7 +92,7 @@ podTemplate(
       container('docker'){
         withGradle {
           script {
-            sh 'ls'
+            sh 'apk add gradle'
             sh 'gradle assemble'
           }
         }
