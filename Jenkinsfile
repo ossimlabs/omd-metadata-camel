@@ -33,13 +33,6 @@ podTemplate(
         envVars: [
             envVar(key: 'HOME', value: '/root')
         ]
-    ),
-    containerTemplate(
-        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.1",
-        name: 'docker',
-        ttyEnabled: true,
-        command: 'cat',
-        privileged: true
     )
   ],
   volumes: [
