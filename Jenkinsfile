@@ -93,7 +93,8 @@ podTemplate(
         withGradle {
           script {
             sh 'apk add gradle'
-            sh 'gradle assemble'
+            sh 'ls /usr'
+            sh './gradle assemble'
           }
         }
       }
@@ -119,6 +120,25 @@ podTemplate(
               sh  "docker tag ${DOCKER_IMAGE_PATH}:${TAG_NAME} ${DOCKER_IMAGE_PATH}:release"
               sh  "docker push ${DOCKER_IMAGE_PATH}:release"
             }
+          }
+        }
+      }
+    }
+
+    stage('Package UI Chart'){
+      container('helm') {
+        script {
+          sh 'helm package chart'
+        }
+      }
+    }
+
+    stage('Upload All Charts'){
+      container('helm') {
+        withCredentials([usernameColonPassword(credentialsId: 'helmCredentials', variable: 'HELM_CREDENTIALS')]) {
+          script {
+            sh 'apk add curl'
+            sh 'curl -u ${HELM_CREDENTIALS} ${HELM_UPLOAD_URL} --upload-file *.tgz -v'
           }
         }
       }
