@@ -92,7 +92,7 @@ podTemplate(
     stage("Build Docker Image") {
       container('docker'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
-          sh  "docker build -t ${UI_DOCKER_IMAGE_PATH}:${TAG_NAME} \
+          sh  "docker build -t ${DOCKER_IMAGE_PATH}:${TAG_NAME} \
                     --build-arg DOCKER_REGISTRY=${DOCKER_REGISTRY_DOWNLOAD_URL} \
                     --build-arg BASE_IMAGE_TAG=release"
           }
