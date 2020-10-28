@@ -7,7 +7,7 @@ FROM adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim
 COPY ./src/main/resources /app/resources
 COPY ./build/classes/groovy/main /app/classes
 COPY src/main/jib /app
-COPY ./build/libs/unzip-and-ingest-0.2-all.jar /app/libs/
+COPY ./build/libs/unzip-and-ingest-*-all.jar /app
 #Create Enviromental Variables
 ENV JAVA_APP_DIR='/app'
 ENV JAVA_APP_JAR=/app/libs/unzip-and-ingest-0.2-all.jar 
