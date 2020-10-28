@@ -36,7 +36,7 @@ podTemplate(
     ),
     containerTemplate(
         image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.1",
-        name: 'docker-helper',
+        name: 'docker',
         ttyEnabled: true,
         command: 'cat',
         privileged: true
@@ -94,12 +94,13 @@ podTemplate(
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
           withGradle {
             script {
+              sh 'ls /usr/lib/'
               sh './gradlew jibDockerBuild'
             }
           }
         }
       }
-    }
+    }           
 
     stage("Push Docker Image") {
       container('docker-helper'){
@@ -143,3 +144,5 @@ podTemplate(
     }
   }
 }
+export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/
+export PATH=$PATH:$JAVA_HOME/bin
