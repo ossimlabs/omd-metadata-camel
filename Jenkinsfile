@@ -93,8 +93,7 @@ podTemplate(
         withGradle {
           script {
             sh 'apk add gradle'
-            sh 'ls /usr'
-            sh './gradle assemble'
+            sh 'gradle assemble'
           }
         }
       }
