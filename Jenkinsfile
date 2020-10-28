@@ -37,8 +37,9 @@ podTemplate(
     containerTemplate(
         image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/docker-helper:1.0.0",
         name: 'docker-helper',
+        ttyEnabled: true,
         command: 'cat',
-        ttyEnabled: true
+        privileged: true
     )
   ],
   volumes: [
