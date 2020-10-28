@@ -90,9 +90,11 @@ podTemplate(
     }
     stage("Build & Deploy") {
       container('docker'){
-        script {
-          sh 'ls'
-          sh 'gradle assemble'
+        withGradle {
+          script {
+            sh 'ls'
+            sh 'gradle assemble'
+          }
         }
       }
     }
