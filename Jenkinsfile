@@ -97,8 +97,7 @@ podTemplate(
                     --build-arg BASE_IMAGE_TAG=release"
           }
         }
-      }
-    }           
+      }          
 
     stage("Push Docker Image") {
       container('docker'){
