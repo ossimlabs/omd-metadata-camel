@@ -88,6 +88,14 @@ podTemplate(
 
       DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/unzip-and-ingest"
     }
+    stage("Build & Deploy") {
+      container('docker'){
+        script {
+          sh 'ls'
+          sh 'gradle assemble'
+        }
+      }
+    }
 
     stage("Build Docker Image") {
       container('docker'){
