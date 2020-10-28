@@ -89,7 +89,7 @@ podTemplate(
     }
 
     stage("Build Docker Image") {
-      container('docker'){
+      container('docker-helper'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
           withGradle {
             script {
@@ -101,7 +101,7 @@ podTemplate(
     }
 
     stage("Push Docker Image") {
-      container('docker'){
+      container('docker-helper'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}") {
           script {
             sh "docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}"
