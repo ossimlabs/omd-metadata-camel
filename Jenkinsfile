@@ -90,22 +90,18 @@ podTemplate(
     }
 
     stage("Build Docker Image") {
-      container('docker-helper'){
+      container('docker'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
-          withGradle {
-            script {
-              sh 'ls /usr/lib/'
-              sh 'export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/'
-              sh 'export PATH=$PATH:$JAVA_HOME/bin'
-              sh './gradlew jibDockerBuild'
-            }
+          sh  "docker build -t ${UI_DOCKER_IMAGE_PATH}:${TAG_NAME} \
+                    --build-arg DOCKER_REGISTRY=${DOCKER_REGISTRY_DOWNLOAD_URL} \
+                    --build-arg BASE_IMAGE_TAG=release"
           }
         }
       }
     }           
 
     stage("Push Docker Image") {
-      container('docker-helper'){
+      container('docker'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}") {
           script {
             sh "docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}"

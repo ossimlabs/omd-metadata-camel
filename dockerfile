@@ -9,34 +9,20 @@ FROM adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim
 # COPY snapshotDependencyJars /app/libs
 # COPY projectDependencyJars /app/libs
 COPY ./src/main/resources /app/resources
-COPY ./src/main/groovy/io/ossim/unzipAndIngest /app/classes
+COPY ./build/classes/groovy/main /app/classes
+
 
 # Jib's extra directory ("src/main/jib" by default) is used to add extra, non-classpath files
-COPY src/main/jib /
+COPY src/main/jib /app
 
 #Copy UnzipAndIngest
-COPY ./build/libs/unzip-and-ingest-0.2.jar /
+COPY ./build/libs/unzip-and-ingest-0.2-all.jar /app/libs/
 
-# Jib's default entrypoint when container.entrypoint is not set
-ENTRYPOINT ["java",
-    jib.container.jvmFlags, 
-    "-cp", 
-    "/app/resources:/app/classes:/app/libs/*", 
-    jib.container.mainClass
-    ]
-CMD [jib.container.args]
 
-    containerizingMode = 'packaged'
-    container {
-        // Run as userid 1001 added so entrypoint doesn't run as root user.
-        // Userid 1001 is common for other Omar applications and NFS mounts.
-        user = '1001:1001'
-        environment = [
-            JAVA_APP_DIR: '/app', 
-            JAVA_MAIN_CLpASS: mainClassName,
-            JAVA_CLASSPATH: '/app/classpath/*:/app/libs/*'
-        ]
-        ports = ['8080']    
-        creationTime = 'USE_CURRENT_TIMESTAMP'
-        entrypoint = ['/app/run_java.sh']
-    }        
+ENV JAVA_APP_DIR='/app'
+ENV JAVA_APP_JAR=/app/libs/unzip-and-ingest-0.2-all.jar 
+ENV JAVA_CLASSPATH=/app/classpath/*:/app/libs/*
+EXPOSE 8080
+RUN chmod 755 /app/run_java.sh
+USER 1001:1001
+CMD /app/run_java.sh
