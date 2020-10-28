@@ -10,7 +10,6 @@ COPY src/main/jib /app
 COPY ./build/libs/unzip-and-ingest-*-all.jar /app
 #Create Enviromental Variables
 ENV JAVA_APP_DIR='/app'
-ENV JAVA_APP_JAR=/app/libs/unzip-and-ingest-0.2-all.jar 
 ENV JAVA_CLASSPATH=/app/classpath/*:/app/libs/*
 #Expose port 8080
 EXPOSE 8080
