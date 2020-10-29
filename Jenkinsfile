@@ -117,7 +117,7 @@ podTemplate(
       }
     }
 
-    stage('Package UI Chart'){
+    stage('Package Chart'){
       container('helm') {
         script {
           sh 'helm package chart'
@@ -125,7 +125,7 @@ podTemplate(
       }
     }
 
-    stage('Upload All Charts'){
+    stage('Upload Chart'){
       container('helm') {
         withCredentials([usernameColonPassword(credentialsId: 'helmCredentials', variable: 'HELM_CREDENTIALS')]) {
           script {
