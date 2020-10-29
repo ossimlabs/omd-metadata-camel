@@ -32,7 +32,7 @@ global:
   useSpringConfigServer: false
 
 image:
-  name: null
+  name: unzip-and-ingest
   tag: null
   pullPolicy: null
 
