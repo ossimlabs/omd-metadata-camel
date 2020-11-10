@@ -33,7 +33,7 @@ metadata:
   name: "{{ $.Values.appName }}-{{ $volumeName }}-pvc"
 spec:
 
-  {{- if gt (len $volumeDict.accessModes)0 }}
+  {{- if gt (len $volumeDict.accessModes) 0 }}
   accessModes:
     {{- range $item := $volumeDict.accessModes }}
     - {{ $item }}
