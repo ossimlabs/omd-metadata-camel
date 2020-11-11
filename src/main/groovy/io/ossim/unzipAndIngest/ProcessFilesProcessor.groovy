@@ -123,16 +123,16 @@ public class ProcessFilesProcessor implements Processor {
      * @return String that is the processed directory
      */
     private String getProcessedDirectory(json) {
-        String date = ''
+        String dateString = ''
 
         for (int i = 0; i < dateKeys.length; i++) {
-            date = findKeyValue(json, dateKeys[i])
-            if (date != null)
+            dateString = findKeyValue(json, dateKeys[i])
+            if (dateString != null)
                 break
         }
 
-        date = date.substring(0, 10)
-        return "${mount.archiveDirectory}/${date}/${this.id}"
+        Date date = Date.parse( "yyyy-MM-dd" , dateString.substring(0, 10) )
+        return "${mount.archiveDirectory}/${date.toYear()}/${date.getMonth() + 1}/${date.getDate()}/${this.id}"
     }
 
     /**
