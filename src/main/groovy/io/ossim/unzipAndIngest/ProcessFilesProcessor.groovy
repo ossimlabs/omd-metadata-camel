@@ -132,6 +132,7 @@ public class ProcessFilesProcessor implements Processor {
         }
 
         date = date.substring(0, 10)
+        date = date.replaceAll("-","/")
         return "${mount.archiveDirectory}/${date}/${this.id}"
     }
 
