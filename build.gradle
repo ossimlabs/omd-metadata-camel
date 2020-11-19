@@ -61,7 +61,7 @@ jib {
         image = "adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim"
     }
     to {
-        image = 'nexus-docker-public-hosted.ossim.io/unzip-and-ingest:3pa-hotfix'
+        image = "nexus-docker-public-hosted.ossim.io/unzip-and-ingest:${System.env.TAG_NAME}"
     }
     extraDirectories {
         paths {
@@ -80,6 +80,9 @@ jib {
     }
     containerizingMode = 'packaged'
     container {
+        // Run as userid 1001 added so entrypoint doesn't run as root user.
+        // Userid 1001 is common for other Omar applications and NFS mounts.
+        user = '1001:1001'
         environment = [
             JAVA_APP_DIR: '/app', 
             JAVA_MAIN_CLASS: mainClassName,

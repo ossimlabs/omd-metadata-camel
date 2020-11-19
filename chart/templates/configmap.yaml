@@ -11,15 +11,9 @@ data:
         logFile: "logs.txt"
       post:
         url:
-          prefix: "{{ .Values.configmap.baseUrl }}/omar-stager/dataManager/addRaster?filename="
+          prefix: "{{ .Values.baseUrl }}/omar-stager/dataManager/addRaster?filename="
           suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
-      mounts:
-        {{- range .Values.configmap.mountBuckets }}
-        - bucket: {{ . }}
-          ingestDirectory: ingest
-          archiveDirectory: archive
-          unzipDirectory: unzipped
-        {{- end }}
+      mounts: {{- include "unzip-and-ingest.mountBuckets" . | indent 8 }}
       parsing:
         dateKeys:
           - acquisitionDate

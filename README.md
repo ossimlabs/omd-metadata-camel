@@ -38,14 +38,10 @@ allows for rapid deployment capabilities while developing.
   
 
 ###### Helm only
-
-`helm install <HELM_DEPLOY_NAME> chart`
-
+`helm install -f chart/values-dev.yaml <HELM_DEPLOY_NAME> chart`
   
 
 ###### Skaffold with Helm
-
-  
 
 `skaffold dev` Uses Helm to deploy to Kubernetes. However, Skaffold is set to monitor any code or config changes, and
 
