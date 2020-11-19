@@ -163,7 +163,7 @@ public class ProcessFilesProcessor implements Processor {
      * @return String to replace the old metadata value.
      */
     private String getChangedNamingCase(oldValue, List<Map> valueMapList) {
-        def value = valueMapList.find { it.oldValue == oldValue }?.newValue
+        def value = valueMapList?.find { it.oldValue == oldValue }?.newValue
         return value == null ? oldValue : value
     }
 
