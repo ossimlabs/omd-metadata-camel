@@ -54,6 +54,18 @@ data:
                 newValue: BlackSky
               - oldValue: Global-10
                 newValue: BlackSky
+          - key: bit_depth
+            oldKeys:
+              - bitsPerPixel
+          - key: gsdx
+            oldKeys:
+              - gsd
+          - key: gsdy
+            oldKeys:
+              - gsd
+          - key: cloud_cover
+            oldKeys:
+              - cloud_percent
       fileExtensions:
         - ntf
         - ntif
