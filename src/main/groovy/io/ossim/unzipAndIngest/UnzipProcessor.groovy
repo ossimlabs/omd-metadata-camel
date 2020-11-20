@@ -30,6 +30,9 @@ public class UnzipProcessor implements Processor {
         def prefixDir = srcPath.split("/").last()
         prefixDir = prefixDir.substring(0, prefixDir.lastIndexOf("."))
 
+        println "="*100
+        println "TRYING TO UNZIP FILE"
+        println "="*100
         try {
             this.ant.unzip(  src:"${srcPath}",
                     dest:"/${mount.bucket}/${mount.unzipDirectory}/${prefixDir}/",
