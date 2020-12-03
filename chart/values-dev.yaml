@@ -81,3 +81,7 @@ livenessProbe:
 
 
 baseUrl: https://omar-3pa-dev.ossim.io
+
+mountBuckets:
+  - maxar-blacksky-data
+  - maxar-skysat-data
