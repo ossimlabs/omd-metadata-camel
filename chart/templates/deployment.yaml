@@ -23,6 +23,8 @@ spec:
           image: "{{ .Values.global.dockerRepository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: 
+            runAsUser: 0
           livenessProbe:
             failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}

@@ -61,7 +61,7 @@ volumeNames:
 # in the skaffold.yaml
 image:
   name: unzip-and-ingest
-  tag: 3pa-hotfix
+  tag: 3pa-hotfix-1
   pullPolicy: Always
 
 internalPort: 8080

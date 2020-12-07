@@ -1,10 +1,10 @@
 apiVersion: skaffold/v2beta4
 kind: Config
 metadata:
-  name: unzip-and-ingest-test
+  name: unzip-and-ingest
 build:
   artifacts:
-    - image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
+    - image: nexus-docker-public-hosted.ossim.io/unzip-and-ingest-test
       jib: {}
   tagPolicy:
     sha256: {}
@@ -16,7 +16,7 @@ build:
 deploy:
   helm:
     releases:
-      - name: unzip-and-ingest
+      - name: unzip-and-ingest-test
         chartPath: chart
         valuesFiles:
           - chart/values-dev.yaml
@@ -25,5 +25,5 @@ deploy:
         # If you want to use an existing image rather than skaffold's
         # comment this out and specify the image in the values-dev.yaml
         artifactOverrides:
-          imageSkaffoldOverride: nexus-docker-public-hosted.ossim.io/unzip-and-ingest
+          imageSkaffoldOverride: nexus-docker-public-hosted.ossim.io/unzip-and-ingest-test
 
