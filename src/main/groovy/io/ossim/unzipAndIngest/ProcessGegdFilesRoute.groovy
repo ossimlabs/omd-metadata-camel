@@ -13,6 +13,8 @@ import org.apache.camel.Exchange
 import org.apache.camel.Handler
 import org.apache.camel.routepolicy.quartz.CronScheduledRoutePolicy;
 
+import groovy.json.JsonSlurper
+
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {
 
@@ -51,9 +53,40 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
         println("\nMounts: " + mounts[0])
 
+        def sqsQueueName = "arn:aws:sqs:us-east-1:320588532383:testDelay"
+
         for (m in mounts) {
             doRoute(m)
         }
+
+        from("aws-sqs://${sqsQueueName}?amazonSQSClient=#client&delay=500&maxMessagesPerPoll=10&deleteAfterRead=true")
+            // .unmarshal().json()
+            .process { exchange ->
+                def jsonSqsMsg = new JsonSlurper().parseText(exchange.in.getBody(String.class))
+
+                def data = [
+                    eventName: jsonSqsMsg.Records[0].eventName,
+                    bucketName: jsonSqsMsg.Records[0].s3.bucket.name,
+                    objectKey: jsonSqsMsg.Records[0].s3.object.key
+                ] as Map<String, String>
+                def prefix = 'https://omar-3pa-dev.ossim.io/omar-wfs/wfs/getFeature?maxFeatures=1&outputFormat=JSON&propertyName=filename&resultType=results&request=GetFeature&service=WFS&typeName=omar:raster_entry&filter=filename=%27'
+                def suffix = '%27&version=1.1.0'
+                def filename = "/data/${data.bucketName}/${data.objectKey}"
+                def url = prefix + filename + suffix;
+
+                def responseText = new URL( url ).getText()
+
+                def responseJson = new JsonSlurper().parseText(responseText)
+                if (responseJson.totalFeatures == 0) {
+                    def path = "${data.bucketName}/${data.objectKey}"
+                    println "-"*80
+                    println "Image file found that has not been ingested: \nfilepath: " + path
+                    println "- "*40
+
+                    File failedIngestFile = new File("/${data.bucketName}/failedIngest.txt")
+                    failedIngestFile.append(path + "\n")
+                }                
+            }
     }
 
     private void doRoute(Map mount) {
@@ -67,7 +100,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
         // 3. Created a done file inside that same directory.
-        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true")
+        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
             .choice()
