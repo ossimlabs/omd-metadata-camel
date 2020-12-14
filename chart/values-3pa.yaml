@@ -11,3 +11,6 @@ configmap:
   mountBuckets:
     - 3pa-blacksky
     - 3pa-skysat
+
+sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-processed-images"
+ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-ingest-alert"

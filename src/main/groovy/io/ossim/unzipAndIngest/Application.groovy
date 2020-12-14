@@ -25,7 +25,7 @@ class Application {
     public void onStartup(ServerStartupEvent event) {
         SimpleRegistry registry = new SimpleRegistry()
         CamelContext context = new DefaultCamelContext(registry)
-
+        
         context.addRoutes(processGegdFilesRoute)
         context.start();
         Logger.printCamelTitleScreen()

@@ -13,8 +13,16 @@ import org.apache.camel.Exchange
 import org.apache.camel.Handler
 import org.apache.camel.routepolicy.quartz.CronScheduledRoutePolicy;
 
+import groovy.json.JsonSlurper
+
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {
+
+    @Value('${app.sqsQueueArn}')
+    String sqsQueueArn
+
+    @Value('${app.ingestAlertQueueArn}')
+    String ingestAlertQueueArn
 
     @Value('${app.logging.logFile}')
     String logFilePath
@@ -48,11 +56,55 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception
     {
+        CronScheduledRoutePolicy startPolicy = new CronScheduledRoutePolicy();
+        startPolicy.setRouteStartTime("* * 12-18 * * ?");
+
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
+
+        println omdKeyMapList
 
         for (m in mounts) {
             doRoute(m)
         }
+
+        from("aws-sqs://${sqsQueueArn}?amazonSQSClient=#client&delay=500&maxMessagesPerPoll=10&deleteAfterRead=true")
+            .routePolicy(startPolicy).noAutoStartup()
+            .process { exchange ->
+                def jsonSqsMsg = new JsonSlurper().parseText(exchange.in.getBody(String.class))
+
+                def data = [
+                    eventName: jsonSqsMsg.Records[0].eventName,
+                    bucketName: jsonSqsMsg.Records[0].s3.bucket.name,
+                    objectKey: jsonSqsMsg.Records[0].s3.object.key
+                ] as Map<String, String>
+                def prefix = 'https://omar-3pa-dev.ossim.io/omar-wfs/wfs/getFeature?maxFeatures=1&outputFormat=JSON&propertyName=filename&resultType=results&request=GetFeature&service=WFS&typeName=omar:raster_entry&filter=filename=%27'
+                def suffix = '%27&version=1.1.0'
+                def filename = "/data/${data.bucketName}/${data.objectKey}"
+                def url = prefix + filename + suffix;
+
+                def responseText = new URL( url ).getText()
+
+                def responseJson = new JsonSlurper().parseText(responseText)
+                if (responseJson.totalFeatures == 0) {
+                    def path = "${data.bucketName}/${data.objectKey}"
+                    println "-"*80
+                    println "Image file found that has not been ingested: \nfilepath: " + path
+                    println "- "*40
+                }
+                exchange.in.setHeader("CamelFileName", filename)
+                exchange.in.setBody(filename)                
+            }
+            .choice()
+                .when(header("CamelFileName").endsWith(".ntf"))
+                    .process { exchange ->
+                        println "SENDING MESSAGE TO ingestAlert QUEUE"
+                    }
+                    .to("aws-sqs://${ingestAlertQueueArn}")
+                .otherwise()
+                    .process { exchange ->
+                        println "Failed"
+                    }
+                .end()
     }
 
     private void doRoute(Map mount) {
