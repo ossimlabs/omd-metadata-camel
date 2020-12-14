@@ -2,10 +2,7 @@ properties([
   parameters ([
     string(name: 'DOCKER_REGISTRY_DOWNLOAD_URL',
            defaultValue: 'nexus-docker-private-group.ossim.io',
-           description: 'Repository of docker images'),
-    string(name: 'GIT_BRANCH_OVERRIDE',
-           defaultValue: '',
-           description: 'Select which branch to use manually.')
+           description: 'Repository of docker images')
   ]),
   pipelineTriggers([
     [$class: "GitHubPushTrigger"]
@@ -49,13 +46,8 @@ podTemplate(
   node(POD_LABEL){
     stage("Checkout branch"){
         scmVars = checkout(scm)
-        if (GIT_BRANCH_OVERRIDE == '') {
-            BRANCH_NAME = GIT_BRANCH_OVERRIDE
-        } else {
-            GIT_BRANCH_NAME = scmVars.GIT_BRANCH
-            BRANCH_NAME = """${sh(returnStdout: true, script: "echo ${GIT_BRANCH_NAME} | awk -F'/' '{print \$2}'").trim()}"""
-        }
-        
+        GIT_BRANCH_NAME = scmVars.GIT_BRANCH
+        BRANCH_NAME = """${sh(returnStdout: true, script: "echo ${GIT_BRANCH_NAME} | awk -F'/' '{print \$2}'").trim()}"""
         VERSION = '1.0.3'
         ARTIFACT_NAME = 'unzip-and-ingest'
         GIT_TAG_NAME = ARTIFACT_NAME + "-" + VERSION
