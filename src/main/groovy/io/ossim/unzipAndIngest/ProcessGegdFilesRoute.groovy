@@ -18,6 +18,12 @@ import groovy.json.JsonSlurper
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {
 
+    @Value('${app.sqsQueueArn}')
+    String sqsQueueArn
+
+    @Value('${app.ingestAlertQueueArn}')
+    String ingestAlertQueueArn
+
     @Value('${app.logging.logFile}')
     String logFilePath
 
@@ -50,17 +56,19 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception
     {
-        bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
-        println("\nMounts: " + mounts[0])
+        CronScheduledRoutePolicy startPolicy = new CronScheduledRoutePolicy();
+        startPolicy.setRouteStartTime("* * 12-18 * * ?");
 
-        def sqsQueueName = "arn:aws:sqs:us-east-1:320588532383:testDelay"
+        bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
+
+        println omdKeyMapList
 
         for (m in mounts) {
             doRoute(m)
         }
 
-        from("aws-sqs://${sqsQueueName}?amazonSQSClient=#client&delay=500&maxMessagesPerPoll=10&deleteAfterRead=true")
-            // .unmarshal().json()
+        from("aws-sqs://${sqsQueueArn}?amazonSQSClient=#client&delay=500&maxMessagesPerPoll=10&deleteAfterRead=true")
+            .routePolicy(startPolicy).noAutoStartup()
             .process { exchange ->
                 def jsonSqsMsg = new JsonSlurper().parseText(exchange.in.getBody(String.class))
 
@@ -82,11 +90,21 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     println "-"*80
                     println "Image file found that has not been ingested: \nfilepath: " + path
                     println "- "*40
-
-                    File failedIngestFile = new File("/${data.bucketName}/failedIngest.txt")
-                    failedIngestFile.append(path + "\n")
-                }                
+                }
+                exchange.in.setHeader("CamelFileName", filename)
+                exchange.in.setBody(filename)                
             }
+            .choice()
+                .when(header("CamelFileName").endsWith(".ntf"))
+                    .process { exchange ->
+                        println "SENDING MESSAGE TO ingestAlert QUEUE"
+                    }
+                    .to("aws-sqs://${ingestAlertQueueArn}")
+                .otherwise()
+                    .process { exchange ->
+                        println "Failed"
+                    }
+                .end()
     }
 
     private void doRoute(Map mount) {

@@ -52,7 +52,6 @@ public class ProcessFilesProcessor implements Processor {
      */
     private void initialize(json) {
         this.omdBody = getOmdFileBodyString(json, omdKeyMapList)
-        println("omd body: " + this.omdBody)
         this.id = findKeyValue(json, "id")
         this.processedDirectory = getProcessedDirectory(json)
     }
@@ -79,8 +78,6 @@ public class ProcessFilesProcessor implements Processor {
 
         int size = 0
         for (f in scanner) {
-            println "#" *100
-            println "Trying to create omd file"
             size++
             def path = f.getAbsolutePath()
             def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
@@ -147,11 +144,9 @@ public class ProcessFilesProcessor implements Processor {
      * @return String to populate the omd files
      */
     private String getOmdFileBodyString(json, omdKeyMapList) {
-        println omdKeyMapList
         String fileBodyString = ''
         for ( map in omdKeyMapList ) {
             def pair = findKeyValuePairFromList(json, map.oldKeys)
-            println ("key to check: " + map.oldKeys)
             if (pair != null) {
                 String keyVal = getChangedNamingCase(pair.value, map.values)
                 fileBodyString += map.key + ": " + keyVal + "\n"

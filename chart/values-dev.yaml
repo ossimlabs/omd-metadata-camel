@@ -60,7 +60,7 @@ volumeNames:
 # This is overwritten by skaffold, if override is specified
 # in the skaffold.yaml
 image:
-  name: unzip-and-ingest
+  name: unzip-and-ingest-test
   tag: 3pa-hotfix-1
   pullPolicy: Always
 
@@ -79,6 +79,8 @@ livenessProbe:
   timeoutSeconds: 3
   failureThreshold: 10
 
+sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:testDelay"
+ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:ingestAlert"
 
 baseUrl: https://omar-3pa-dev.ossim.io
 
