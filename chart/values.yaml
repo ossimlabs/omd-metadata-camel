@@ -11,18 +11,19 @@ replicas: 1
 appName: unzip-and-ingest
 
 global:
-  dockerRepository: nexus-docker-public-hosted.ossim.io
-  imagePullSecret:
-    registry: null
-    username: null
-    password: null
-  hostname: omar-dev.ossim.io
+  useTls: true
+  useTLSClientAuth: false
+  sslCertSecretName: ssl-certs
+  authSslCertSecretName: pki-ssl-certs
+  dockerRepository: nexus-docker-proxy.3pa.maxar.com
+  hostname: omar.3pa.maxar.com
 
   createIngress: true
-  useTls: false
-  useTLSClientAuth: false
-  sslCertSecretName: null
-  authSslCertSecretName: null
+
+  imagePullSecret:
+    registry: nexus-docker-proxy.3pa.maxar.com
+    username: radiantcibot
+    password: lhLvXspFyX9wraf6jB1I
 
   createImagePullSecret: true
   useImagePullSecret: true
@@ -52,8 +53,8 @@ global:
 
 image:
   name: unzip-and-ingest
-  tag: null
-  pullPolicy: null
+  tag: 1.0.4
+  pullPolicy: IfNotPresent
 
 internalPort: 8080
 externalPort: 8080
