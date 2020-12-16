@@ -31,6 +31,25 @@ global:
   createPVs: true
   useSpringConfigServer: false
 
+  volumes:
+    maxar-blacksky-data:
+      type: nfs
+      nfsServer: 10.100.40.114
+      nfsMountPoint: /3pa-blacksky
+      accessModes:
+        - ReadWriteMany
+      size: 500Gi
+      mountPath: /3pa-blacksky
+
+    maxar-skysat-data:
+      type: nfs
+      nfsServer: 10.100.40.114
+      nfsMountPoint: /3pa-skysat
+      accessModes:
+        - ReadWriteMany
+      size: 500Gi
+      mountPath: /3pa-skysat
+
 image:
   name: unzip-and-ingest
   tag: null
