@@ -54,5 +54,5 @@ livenessProbe:
 
 baseUrl: https://omar-3pa-dev.ossim.io
 
-sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:testDelay"
-ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:ingestAlert"
+sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-processed-images"
+ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-ingest-alert"
