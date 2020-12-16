@@ -1,6 +1,6 @@
 # Args to be passed with docker build 
-ARG DOCKER_REGISTRY=nexus-docker-private-group.ossim.io
-ARG BASE_IMAGE_TAG=release
+# ARG DOCKER_REGISTRY=nexus-docker-private-group.ossim.io
+# ARG BASE_IMAGE_TAG=release
 #Base image
 FROM adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim
 #Copy relevent files

@@ -72,10 +72,10 @@ podTemplate(
           TAG_NAME = VERSION
           break
         case "dev":
-          TAG_NAME = "latest"
+          TAG_NAME = VERSION + "-dev-" + new Date().format("yyyyMMddHHmm")
           break
         default:
-          TAG_NAME = BRANCH_NAME
+          TAG_NAME = BRANCH_NAME + "-" + new Date().format("yyyyMMddHHmm")
           break
       }
 
@@ -94,24 +94,15 @@ podTemplate(
 
     stage("Build Docker Image") {
       container('docker'){
-        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
-          sh  "docker build . -t ${DOCKER_IMAGE_PATH}:${TAG_NAME} \
-                    --build-arg DOCKER_REGISTRY=${DOCKER_REGISTRY_DOWNLOAD_URL} \
-                    --build-arg BASE_IMAGE_TAG=release"
-          }
-        }
-      }          
+        sh  "docker build . -t ${DOCKER_IMAGE_PATH}:${TAG_NAME}"
+      }
+    }          
 
     stage("Push Docker Image") {
       container('docker'){
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}") {
           script {
             sh "docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}"
-
-            if (BRANCH_NAME == "master") {
-              sh  "docker tag ${DOCKER_IMAGE_PATH}:${TAG_NAME} ${DOCKER_IMAGE_PATH}:release"
-              sh  "docker push ${DOCKER_IMAGE_PATH}:release"
-            }
           }
         }
       }
