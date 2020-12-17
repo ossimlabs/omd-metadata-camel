@@ -74,8 +74,8 @@ livenessProbe:
 
 baseUrl: http://omar-stager-app:8080
 
-sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-processed-images"
-ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-ingest-alert"
+sqsQueueArn: "arn:aws:sqs:us-east-1:576113035271:gegd-processed-images"
+ingestAlertQueueArn: "arn:aws:sqs:us-east-1:576113035271:gegd-ingest-alert"
 
 volumeNames:
   - maxar-blacksky-data
