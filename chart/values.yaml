@@ -72,7 +72,7 @@ livenessProbe:
   failureThreshold: 10
 
 
-baseUrl: https://omar-3pa-dev.ossim.io
+baseUrl: http://omar-stager-app:8080
 
 sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-processed-images"
 ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-ingest-alert"
