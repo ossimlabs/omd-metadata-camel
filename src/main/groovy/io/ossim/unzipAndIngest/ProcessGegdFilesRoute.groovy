@@ -102,7 +102,6 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     .to("aws-sqs://${ingestAlertQueueArn}")
                 .otherwise()
                     .process { exchange ->
-                        println "Failed"
                     }
                 .end()
     }
