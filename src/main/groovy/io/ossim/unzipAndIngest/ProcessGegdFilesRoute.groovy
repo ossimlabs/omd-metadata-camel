@@ -101,11 +101,13 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     println "-"*80
                     println "Image file found that has not been ingested: \nfilepath: " + filename
                     println "- "*40
+
+                    exchange.in.setHeader("CamelFileName", filename)
+                } else {
+                    exchange.in.setHeader("CamelFileName", "success")
                 }
 
                 def path = "${data.bucketName}/${data.objectKey}"
-
-                exchange.in.setHeader("CamelFileName", filename)
                 exchange.in.setBody(path)                
             }
             .choice()
