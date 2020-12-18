@@ -87,9 +87,11 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     objectKey: jsonSqsMsg.Records[0].s3.object.key
                 ] as Map<String, String>
 
+                def wfsFP = wfsFilenamePrefix == "empty" ? "" : wfsFilenamePrefix
+
                 def prefix = wfsBaseUrl + wfsPostPrefix
                 def suffix = '%27&version=1.1.0'
-                def filename = "${wfsFilenamePrefix}/${data.bucketName}/${data.objectKey}"
+                def filename = "${wfsFP}/${data.bucketName}/${data.objectKey}"
                 def url = prefix + filename + suffix;
 
                 def responseText = new URL( url ).getText()
@@ -102,7 +104,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                 }
 
                 def path = "${data.bucketName}/${data.objectKey}"
-                
+
                 exchange.in.setHeader("CamelFileName", filename)
                 exchange.in.setBody(path)                
             }
