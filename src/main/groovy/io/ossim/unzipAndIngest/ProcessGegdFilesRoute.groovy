@@ -18,6 +18,15 @@ import groovy.json.JsonSlurper
 @Singleton
 class ProcessGegdFilesRoute extends RouteBuilder {
 
+    @Value('${app.wfsBaseUrl}')
+    String wfsBaseUrl
+
+    @Value('${app.wfsPostPrefix}')
+    String wfsPostPrefix
+
+    @Value('${app.wfsFilenamePrefix}')
+    String wfsFilenamePrefix
+
     @Value('${app.sqsQueueArn}')
     String sqsQueueArn
 
@@ -77,22 +86,25 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                     bucketName: jsonSqsMsg.Records[0].s3.bucket.name,
                     objectKey: jsonSqsMsg.Records[0].s3.object.key
                 ] as Map<String, String>
-                def prefix = 'https://omar-3pa-dev.ossim.io/omar-wfs/wfs/getFeature?maxFeatures=1&outputFormat=JSON&propertyName=filename&resultType=results&request=GetFeature&service=WFS&typeName=omar:raster_entry&filter=filename=%27'
+
+                def prefix = wfsBaseUrl + wfsPostPrefix
                 def suffix = '%27&version=1.1.0'
-                def filename = "/data/${data.bucketName}/${data.objectKey}"
+                def filename = "${wfsFilenamePrefix}/${data.bucketName}/${data.objectKey}"
                 def url = prefix + filename + suffix;
 
                 def responseText = new URL( url ).getText()
 
                 def responseJson = new JsonSlurper().parseText(responseText)
                 if (responseJson.totalFeatures == 0) {
-                    def path = "${data.bucketName}/${data.objectKey}"
                     println "-"*80
-                    println "Image file found that has not been ingested: \nfilepath: " + path
+                    println "Image file found that has not been ingested: \nfilepath: " + filename
                     println "- "*40
                 }
+
+                def path = "${data.bucketName}/${data.objectKey}"
+                
                 exchange.in.setHeader("CamelFileName", filename)
-                exchange.in.setBody(filename)                
+                exchange.in.setBody(path)                
             }
             .choice()
                 .when(header("CamelFileName").endsWith(".ntf"))
