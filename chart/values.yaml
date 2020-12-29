@@ -53,7 +53,7 @@ global:
 
 image:
   name: unzip-and-ingest
-  tag: 1.1.0
+  tag: 1.1.1
   pullPolicy: IfNotPresent
 
 internalPort: 8080
