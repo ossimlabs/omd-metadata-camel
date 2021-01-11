@@ -7,6 +7,9 @@ metadata:
 data:
   application.yaml: |-
     app:
+      wfsBaseUrl: {{ .Values.wfsBaseUrl }}
+      wfsPostPrefix: {{ .Values.wfsPostPrefix }}
+      wfsFilenamePrefix: {{ .Values.wfsFilenamePrefix }}
       sqsQueueArn: {{ .Values.sqsQueueArn }}
       ingestAlertQueueArn: {{ .Values.ingestAlertQueueArn }}
       logging:

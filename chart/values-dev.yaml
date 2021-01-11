@@ -84,6 +84,10 @@ ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:ingestAlert"
 
 baseUrl: https://omar-3pa-dev.ossim.io
 
+wfsBaseUrl: https://omar-3pa-dev.ossim.io/
+wfsPostPrefix: "omar-wfs/wfs/getFeature?maxFeatures=1&outputFormat=JSON&propertyName=filename&resultType=results&request=GetFeature&service=WFS&typeName=omar:raster_entry&filter=filename=%27"
+wfsFilenamePrefix: /data
+
 mountBuckets:
   - maxar-blacksky-data
   - maxar-skysat-data

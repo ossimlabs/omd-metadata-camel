@@ -11,18 +11,19 @@ replicas: 1
 appName: unzip-and-ingest
 
 global:
-  dockerRepository: nexus-docker-public-hosted.ossim.io
-  imagePullSecret:
-    registry: null
-    username: null
-    password: null
-  hostname: omar-dev.ossim.io
+  useTls: true
+  useTLSClientAuth: false
+  sslCertSecretName: ssl-certs
+  authSslCertSecretName: pki-ssl-certs
+  dockerRepository: nexus-docker-proxy.3pa.maxar.com
+  hostname: omar.3pa.maxar.com
 
   createIngress: true
-  useTls: false
-  useTLSClientAuth: false
-  sslCertSecretName: null
-  authSslCertSecretName: null
+
+  imagePullSecret:
+    registry: nexus-docker-proxy.3pa.maxar.com
+    username: radiantcibot
+    password: lhLvXspFyX9wraf6jB1I
 
   createImagePullSecret: true
   useImagePullSecret: true
@@ -52,8 +53,8 @@ global:
 
 image:
   name: unzip-and-ingest
-  tag: null
-  pullPolicy: null
+  tag: 1.1.3
+  pullPolicy: IfNotPresent
 
 internalPort: 8080
 externalPort: 8080
@@ -71,10 +72,14 @@ livenessProbe:
   failureThreshold: 10
 
 
-baseUrl: https://omar-3pa-dev.ossim.io
+baseUrl: http://omar-stager-app:8080
 
-sqsQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-processed-images"
-ingestAlertQueueArn: "arn:aws:sqs:us-east-1:320588532383:gegd-ingest-alert"
+wfsBaseUrl: https://omar-3pa.ossim.io/
+wfsPostPrefix: "omar-wfs/wfs/getFeature?maxFeatures=1&outputFormat=JSON&propertyName=filename&resultType=results&request=GetFeature&service=WFS&typeName=omar:raster_entry&filter=filename=%27"
+wfsFilenamePrefix: empty
+
+sqsQueueArn: "arn:aws:sqs:us-east-1:576113035271:gegd-processed-images"
+ingestAlertQueueArn: "arn:aws:sqs:us-east-1:576113035271:gegd-ingest-alert"
 
 volumeNames:
   - maxar-blacksky-data
