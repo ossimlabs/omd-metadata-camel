@@ -54,9 +54,9 @@ podTemplate(
 
       script {
         if (BRANCH_NAME != 'master') {
-          buildName "${VERSION}-SNAPSHOT - ${BRANCH_NAME}"
+          buildName "${CHART_APP_VERSION}-SNAPSHOT - ${BRANCH_NAME}"
         } else {
-          buildName "${VERSION} - ${BRANCH_NAME}"
+          buildName "${CHART_APP_VERSION} - ${BRANCH_NAME}"
         }
       }
     }
