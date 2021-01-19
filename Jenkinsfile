@@ -7,7 +7,7 @@ properties([
     pipelineTriggers([
         [$class: "GitHubPushTrigger"]
     ]),
-    [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/Maxar-Corp/unzip-and-ingest']
+    [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/ossimlabs/unzip-and-ingest']
 ])
 
 podTemplate(
