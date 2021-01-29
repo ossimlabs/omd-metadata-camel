@@ -8,6 +8,7 @@ properties([
         [$class: "GitHubPushTrigger"]
     ]),
     [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/ossimlabs/unzip-and-ingest']
+
 ])
 
 podTemplate(
