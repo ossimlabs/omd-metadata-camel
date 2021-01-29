@@ -65,6 +65,10 @@ data:
           - key: cloud_cover
             oldKeys:
               - cloud_percent
+          - key: acquisition_date
+            oldKeys:
+            - acquisitionDate
+            - acquired
       fileExtensions:
         - ntf
         - ntif

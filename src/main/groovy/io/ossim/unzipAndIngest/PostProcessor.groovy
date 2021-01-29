@@ -10,6 +10,9 @@ public class PostProcessor implements Processor {
     private String urlSuffix
 
     private File logFile
+    private Boolean isSkySat
+
+    private def ant = new AntBuilder()
 
     /**
      * Constructor.
@@ -19,6 +22,7 @@ public class PostProcessor implements Processor {
         this.urlPrefix = urlPrefix
         this.urlSuffix = urlSuffix
         this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
+        // this.isSkySat = mount.bucket.contains("skysat")
     }
 
     /**
@@ -29,26 +33,34 @@ public class PostProcessor implements Processor {
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-        def map = exchange.in.getBody(Map.class)
+        def header = exchange.in.getHeaders()        
+        // println "postbody = ${header.postFilename}"
+        // println "mapPostprocess = ${map}"
+        // File omdFile = new File("/${mount.bucket}/${map.filename}")
+        String url = this.urlPrefix + header.postFilename + this.urlSuffix
 
-        File omdFile = new File("/${mount.bucket}/${map.filename}")
-        String url = this.urlPrefix + map.postFilename + this.urlSuffix
-
-        if (omdFile.exists()) {
-            logOmdExists(map.filename)
-        } else {
-            omdFile.withWriter { writer ->
-                writer.write(map.body)
-            }
-        }
-
-        logProcess(map.postFilename)
-
+        logProcess(body.postFilename)
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")
 
         logHttp(url)
     }
+
+    /**
+     * Get the path to place the done file in. This file will prevent 
+     * the remaining camel routes from kicking off until the zip file is completely extracted.
+     * 
+     * @param scanner Contains the metadata.json file necessary for creating the done file path.
+     * @return String that represents the path where the done file will be created.
+     */
+    private String getReadyFilePath(path) {
+            def prefix = "/${mount.bucket}/${mount.unzipDirectory}/"
+            if (prefix.length() == path.lastIndexOf("/"))
+                return "ready"
+            else
+                return path.substring(prefix.length(), path.lastIndexOf("/")) + "/ready"
+
+    }    
 
     private void logHttp(url) {
         Logger logger = new Logger("HTTP", "POST",
@@ -62,17 +74,9 @@ public class PostProcessor implements Processor {
         Logger logger = new Logger("Merge", "PostProcessor",
                                    "Found omd file of image file to be posted",
                                    "File found for POST operation:",
-                                   postFilePath.split('/').last(), ColorScheme.splitter,
+                                   postFilePath, ColorScheme.splitter,
                                    logFile, true, ConsoleColors.FILENAME)
         logger.log()
     }
 
-    private void logOmdExists(filename) {
-        Logger logger = new Logger("Omd", "PostProcessor",
-                                   "Found duplicate omd file",
-                                   "Filename:",
-                                   filename, ColorScheme.splitter,
-                                   logFile, true, ConsoleColors.FILENAME)
-        logger.log()
-    }
 }

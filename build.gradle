@@ -5,7 +5,7 @@ plugins {
     id "application"
 }
 
-version "0.2"
+version "0.3"
 group "io.ossim.unzipAndIngest"
 
 repositories {
@@ -58,10 +58,13 @@ mainClassName = "io.ossim.unzipAndIngest.Application"
 
 jib {
     from {
-        image = "adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim"
+        // image = "adoptopenjdk/openjdk13-openj9:jdk-13.0.2_8_openj9-0.18.0-alpine-slim"
+        // image = "nexus-docker-public-hosted.ossim.io/ossim-runtime-alpine:grogu"
+        image = "nexus-docker-public-hosted.ossim.io/ossim-runtime-alpine:mando"
+        // image = "nexus-docker-private-group.ossim.io/ossim-alpine-jdk11-runtime:1.2"
     }
     to {
-        image = "nexus-docker-public-hosted.ossim.io/unzip-and-ingest:${System.env.TAG_NAME}"
+        image = "nexus-docker-public-hosted.ossim.io/unzip-and-ingest:$tagName"
     }
     extraDirectories {
         paths {

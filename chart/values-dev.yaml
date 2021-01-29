@@ -36,21 +36,23 @@ global:
   volumes:
     maxar-blacksky-data:
       type: nfs
-      nfsServer: 10.70.40.254
-      nfsMountPoint: /maxar-blacksky-data
+      nfsServer:  10.70.40.254
+      nfsMountPoint: /omar-3pa-dev-nfs/3pa-blacksky
       accessModes:
         - ReadWriteMany
       size: 500Gi
-      mountPath: /maxar-blacksky-data
+      mountPath: /3pa-blacksky
 
     maxar-skysat-data:
       type: nfs
       nfsServer: 10.70.40.254
-      nfsMountPoint: /maxar-skysat-data
+      nfsMountPoint: /omar-3pa-dev-nfs/3pa-skysat
       accessModes:
         - ReadWriteMany
       size: 500Gi
-      mountPath: /maxar-skysat-data
+      mountPath: /3pa-skysat
+
+      #add elevation
 
 # These are used in the helper to create the pvcs, if no mounts are needed remove
 volumeNames:
@@ -60,8 +62,8 @@ volumeNames:
 # This is overwritten by skaffold, if override is specified
 # in the skaffold.yaml
 image:
-  name: unzip-and-ingest-test
-  tag: 3pa-hotfix-1
+  name: unzip-and-ingest
+  tag: kasey
   pullPolicy: Always
 
 internalPort: 8080
