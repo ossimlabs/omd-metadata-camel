@@ -33,21 +33,21 @@ public class MosaicProcessor implements Processor {
      */
     public void process(Exchange exchange) throws Exception {
         def map = exchange.in.getBody()
-		println "\n\n MOSAIC PROCESSOR HAS BEEN HITT \n\n"
-        println "Mosaic map = ${map}"
+		// println "\n\n MOSAIC PROCESSOR HAS BEEN HITT \n\n"
+        // println "Mosaic map = ${map}"
 		def header = exchange.in.getHeaders()
-		println "mosiac header = ${header}"
+		// println "mosiac header = ${header}"
 		def body = exchange.in.getBody()
         def readyFile = new File(header.readyFile)
-		println "mosaic body = ${body}"
+		// println "mosaic body = ${body}"
 
             def skySatDir = readyFile.getParent()
             def isPan = readyFile.getName().contains("panchromatic")
             def searchInclude = "*"
-            def searchExclude = "*panchromatic*"
+            def searchExclude = "*panchromatic*, *mosaic*"
             if (isPan){
                 searchInclude = "*panchromatic*"
-                searchExclude = ""
+                searchExclude = "*mosaic*"
             }
             // def skySatId = skySatDir.find( /\d+_\d+_ssc\d+d\d+/ )
             // def mosaicReady = new File("${skySatDir}/${skySatId}_mosaic.ready")

@@ -134,7 +134,7 @@ public class ProcessFilesProcessor implements Processor {
                 if (isPan){
                     readyFile = new File("/${mount.bucket}/${this.processedDirectory}/${this.skySatId}_panchromatic_mosaic.ready")
                 }
-                println "mosaic file ${readyFile}"
+                // println "mosaic file ${readyFile}"
                 // readyFile.createNewFile() 
                 exchange.in.setHeader("MosaicReady", "true")
                 exchange.in.setHeader("ReadyFile", readyFile.toString())

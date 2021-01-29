@@ -39,7 +39,7 @@ public class PostProcessor implements Processor {
         // File omdFile = new File("/${mount.bucket}/${map.filename}")
         String url = this.urlPrefix + header.postFilename + this.urlSuffix
 
-        logProcess(body.postFilename)
+        logProcess(header.postFilename)
         exchange.in.setHeader(Exchange.HTTP_URI, url)
         exchange.in.setHeader("CamelHttpMethod", "POST")
 

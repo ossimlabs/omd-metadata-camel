@@ -131,6 +131,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         Processor postProcessor = new PostProcessor(mount, urlPrefix, urlSuffix)
         Processor mosaicProcessor = new MosaicProcessor()
 
+
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
         // 3. Created a done file inside that same directory.
@@ -174,6 +175,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                                                         ex.getMessage(), ColorScheme.error, logFile, true)
                             logger.log()
                         }
+                    .end()
                 .when(body().contains("BlackSky"))
                     .process(postProcessor)
                     .setBody(constant(null))
@@ -195,5 +197,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                                                         ex.getMessage(), ColorScheme.error, logFile, true)
                             logger.log()
                         }
+                    .end()
+            .end()
     }
 }
