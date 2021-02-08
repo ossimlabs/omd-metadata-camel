@@ -136,13 +136,15 @@ node(POD_LABEL){
 
     stage("Build Docker Image") {
       container('docker'){
-        withGradle {
-          script {
-              sh """
-                apk add openjdk8
-                ./gradlew jDB
-              """
-            }
+        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
+          withGradle {
+            script {
+                sh """
+                  apk add openjdk8
+                  ./gradlew jDB
+                """
+              }
+          }
         }
       }
     }
