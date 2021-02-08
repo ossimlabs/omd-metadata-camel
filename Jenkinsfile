@@ -142,13 +142,31 @@ node(POD_LABEL){
                 sh """
                   apk add openjdk8
                   ./gradlew jDB
-                  docker tag ${DOCKER_IMAGE_PATH} ${DOCKER_IMAGE_PATH}:${TAG_NAME}
-                  docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}
                 """
               }
           }
         }
       }
+    }
+
+    stage('Docker Tag') {
+        container('docker') {
+            withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
+                sh """
+                    docker tag ${DOCKER_IMAGE_PATH} ${DOCKER_IMAGE_PATH}:${TAG_NAME}
+                """
+            }
+        }
+    }
+
+    stage('Docker Push') {
+        container('docker') {
+            withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}") {
+            sh """
+                docker push ${DOCKER_IMAGE_PATH}:${TAG_NAME}
+            """
+            }
+        }
     }
 
     stage('Package & Upload Chart'){

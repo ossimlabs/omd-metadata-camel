@@ -64,8 +64,7 @@ jib {
         image = "nexus-docker-private-group.ossim.io/ossim-alpine-jdk11-runtime:1.3"
     }
     to {
-        image = "nexus-docker-public-hosted.ossim.io/unzip-and-ingest"
-        tags = ['latest', 'jenkins']
+        image = "nexus-docker-private-hosted.ossim.io/unzip-and-ingest"
     }
     extraDirectories {
         paths {
