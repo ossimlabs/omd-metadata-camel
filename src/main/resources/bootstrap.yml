@@ -17,4 +17,4 @@ kubernetes:
       enabled: true
       watch: true
       labels:
-        - app: unzip-and-ingest-test
+        - app: unzip-and-ingest
