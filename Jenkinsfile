@@ -60,7 +60,7 @@ podTemplate(
 {
 node(POD_LABEL){
     stage("Checkout branch") {
-        APP_NAME = PROJECT_URL.tokenize('/').last()
+        APP_NAME = ${PROJECT_URL}.tokenize('/').last()
         scmVars = checkout(scm)
         Date date = new Date()
         String currentDate = date.format("YYYY-MM-dd-HH-mm-ss")
