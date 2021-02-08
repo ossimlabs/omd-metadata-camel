@@ -134,13 +134,17 @@ node(POD_LABEL){
 //         }
 //     }
 
-    stage('Build') {
-        container('builder') {
-            sh """
+    stage("Build Docker Image") {
+      container('docker'){
+        withGradle {
+          script {
+              sh """
                 apk add openjdk8
                 ./gradlew jDB
-            """
+              """
+            }
         }
+      }
     }
 
     stage('Docker Tag') {
