@@ -50,6 +50,3 @@ livenessProbe:
   initialDelaySeconds: 5
   timeoutSeconds: 3
   failureThreshold: 10
-
-
-baseUrl: https://omar-3pa-dev.ossim.io

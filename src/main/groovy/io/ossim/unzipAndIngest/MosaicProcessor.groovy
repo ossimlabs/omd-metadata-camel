@@ -18,72 +18,52 @@ public class MosaicProcessor implements Processor {
      * Constructor.
      */
     public MosaicProcessor( ) {
-        //this.mount = mount
-        // this.urlPrefix = urlPrefix
-        // this.urlSuffix = urlSuffix
-        // this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
+
     }
 
     /**
-     * Process to POST to omar stager the filename of the file corresponding
-     * to the omd file in the exchange.
+     * Process to create a mosaic from tif files and
+     * to merge omd files into one omd with averages.
      *
      * @param exchange This exchange contains an omd file in which there should be a corresponding
-     * image file for posting inside the same directory.
+     * image file for processing inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-        def map = exchange.in.getBody()
-		// println "\n\n MOSAIC PROCESSOR HAS BEEN HITT \n\n"
-        // println "Mosaic map = ${map}"
-		def header = exchange.in.getHeaders()
-		// println "mosiac header = ${header}"
-		def body = exchange.in.getBody()
+		// get the exchange header
+        def header = exchange.in.getHeaders()
         def readyFile = new File(header.readyFile)
-		// println "mosaic body = ${body}"
 
-            def skySatDir = readyFile.getParent()
-            def isPan = readyFile.getName().contains("panchromatic")
-            def searchInclude = "*"
-            def searchExclude = "*panchromatic*, *mosaic*"
-            if (isPan){
-                searchInclude = "*panchromatic*"
-                searchExclude = "*mosaic*"
-            }
-            // def skySatId = skySatDir.find( /\d+_\d+_ssc\d+d\d+/ )
-            // def mosaicReady = new File("${skySatDir}/${skySatId}_mosaic.ready")
-            // def readyMosaic = exchange.getHeaders("MosaicReady")
-            // println "moasic ready ${mosaicReady}"
-            
-            // convertWithChipper(readyFile)
-    
-                
-                def images = new FileNameFinder().getFileNames(skySatDir, searchInclude + ".tif", searchExclude)
-                def omds = new FileNameFinder().getFileNames(skySatDir, searchInclude + ".omd", searchExclude)
-                def outImage =  readyFile.toString().replace(".ready", ".tif")
-
-                createCombinedOMD(omds, outImage)
-                println "\n\n_____CREATING MOSAIC "
-                // logProcess(outImage)
-                createMosaic(images, outImage)
-                // url = this.urlPrefix + outImage + this.urlSuffix
-                
-                exchange.in.setHeader("postFilename", outImage)
-                // exchange.in.setBody([filename: mosaicReady, body: outImage])
-                // Post to stager when Mosaic is done
-                // exchange.in.setHeader(Exchange.HTTP_URI, url)
-                // exchange.in.setHeader("CamelHttpMethod", "POST")
-                // // println exchange.in.getHeaders()
-                // logHttp(url)
-            
-            
+        def skySatDir = readyFile.getParent()
+        def isPan = readyFile.getName().contains("panchromatic")
+        def searchInclude = "*"
+        def searchExclude = "*panchromatic*, *mosaic*"
+        
+        if (isPan){
+            searchInclude = "*panchromatic*"
+            searchExclude = "*mosaic*"
         }
+
+        // gather the files for the mosaic 
+        def images = new FileNameFinder().getFileNames(skySatDir, searchInclude + ".tif", searchExclude)
+        def omds = new FileNameFinder().getFileNames(skySatDir, searchInclude + ".omd", searchExclude)
+        def outImage =  readyFile.toString().replace(".ready", ".tif")
+
+        // create the mosaic omd
+        createCombinedOMD(omds, outImage)
+
+        // create the mosaic
+        createMosaic(images, outImage, readyFile)
+        
+        // Set the filename to the mosaic image
+        exchange.in.setHeader("postFilename", outImage)          
+    }
 
 
    /**
      * Process to create a combined omd file from original omds for the mosaic.
      * 
      *
-     * @omds a list of omd files to use to average the omd values
+     * @omds a List<String> of omd files to use to average the omd values
      * 
      * @outImage the output location to create the new omd file
      */
@@ -142,34 +122,17 @@ public class MosaicProcessor implements Processor {
         }
     }
 
-    // private void convertWithChipper(image){
-    //     def outImage = new File(image.getAbsolutePath().replace(".omd", ".tif"))
-    //     if (outImage.exists())
-    //     {
-    //         //println "${outImage} already exists."
-    //         logExeError(outImage, "Image already exists", "Chipper Warning")
-    //     }
-    //     else {
-    //         def tifCommand = [
-    //             "ossim-chipper",
-    //             "--op", "ortho",
-    //             image.getAbsolutePath().replace(".omd",".ntf"), 
-    //             outImage
-    //         ]
-    //         // println tifCommand
-
-    //         // def output = executeCommand( tifCommand)	
-    //         if (output.contains("Error"))
-    //         {
-    //             logExeError(outImage, output, "Chipper Error")
-    //         }
-    //         else{
-    //             logExe(outImage, output, "Chipper Complete")
-    //         }
-    //     }
-    // }
-
-    private void createMosaic(images, outImage){
+   /**
+     * Process to create a mosaic from provided tif images.
+     * 
+     *
+     * @images a List<String> of tif files to use for the mosaic
+     * 
+     * @outImage the output location to create the new omd file
+     *
+     * @doneFile The mosaic.ready file
+     */
+    private void createMosaic(images, outImage, doneFile){
         println "Creating mosaic ${ outImage }..."
         
         def mosaicCommand = [
@@ -186,11 +149,16 @@ public class MosaicProcessor implements Processor {
         }
         else{
             logExe(outImage, output, "Mosaic Complete")
+            doneFile.delete()
         }
-
-
     }
 
+   /**
+     * Process to execute a command line call
+     * 
+     *
+     * @command a list of the command and params
+     */
     private String executeCommand( command ) {
         def process = command.execute()
         def standardOut = new StringBuffer()
@@ -199,7 +167,6 @@ public class MosaicProcessor implements Processor {
         
         if (standardError)
         {
-
             return "Error - ${standardError}"
         }
 

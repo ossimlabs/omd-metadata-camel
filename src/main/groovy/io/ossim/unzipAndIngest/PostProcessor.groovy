@@ -22,7 +22,6 @@ public class PostProcessor implements Processor {
         this.urlPrefix = urlPrefix
         this.urlSuffix = urlSuffix
         this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
-        // this.isSkySat = mount.bucket.contains("skysat")
     }
 
     /**
@@ -34,9 +33,6 @@ public class PostProcessor implements Processor {
      */
     public void process(Exchange exchange) throws Exception {
         def header = exchange.in.getHeaders()        
-        // println "postbody = ${header.postFilename}"
-        // println "mapPostprocess = ${map}"
-        // File omdFile = new File("/${mount.bucket}/${map.filename}")
         String url = this.urlPrefix + header.postFilename + this.urlSuffix
 
         logProcess(header.postFilename)
