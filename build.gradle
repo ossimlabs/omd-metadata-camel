@@ -65,7 +65,7 @@ jib {
     }
     to {
         image = "nexus-docker-public-hosted.ossim.io/unzip-and-ingest"
-        tags = ['latest']
+        tags = ['latest', 'jenkins']
     }
     extraDirectories {
         paths {

@@ -153,7 +153,7 @@ node(POD_LABEL){
         container('docker') {
             withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
                 sh """
-                    docker tag ${DOCKER_IMAGE_PATH} ${DOCKER_IMAGE_PATH}:${TAG_NAME}
+                    docker tag ${DOCKER_IMAGE_PATH}:jenkins ${DOCKER_IMAGE_PATH}:${TAG_NAME}
                 """
             }
         }
