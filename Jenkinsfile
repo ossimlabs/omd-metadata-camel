@@ -137,6 +137,7 @@ node(POD_LABEL){
     stage('Build') {
         container('builder') {
             sh """
+                apk add openjdk8
                 ./gradlew jDB
             """
         }
