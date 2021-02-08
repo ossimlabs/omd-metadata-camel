@@ -137,16 +137,16 @@ node(POD_LABEL){
     stage('Build') {
         container('builder') {
             sh """
-                ./gradlew assemble
+                ./gradlew jDB
             """
         }
     }
 
-    stage('Docker Build') {
+    stage('Docker Tag') {
         container('docker') {
             withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
                 sh """
-                    docker build . -t ${DOCKER_IMAGE_PATH}:${TAG_NAME}
+                    docker tag ${DOCKER_IMAGE_PATH} ${DOCKER_IMAGE_PATH}:${TAG_NAME}
                 """
             }
         }
