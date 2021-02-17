@@ -190,7 +190,7 @@ public class ProcessFilesProcessor implements Processor {
     }
 
     private void convertWithChipper(image){
-        if (isSkySat){
+        if (this.isSkySat){
             def outImage = new File(image.replace(".ntf", ".tif"))
             if (outImage.exists())
             {
