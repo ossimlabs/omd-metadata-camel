@@ -20,8 +20,11 @@ public class ProcessFilesProcessor implements Processor {
 
 
     private String omdBody // File content for the omd file created from the metadata
-    private String id // Image id gathered from the metadata
+    private String id // Image id gathered from the metadata, eg 20201029_054557_ssc6d1_0001
     private String processedDirectory // Final directory location for ingest files
+    private String skySatId // Image id removing the scene id, eg 20201029_054557_ssc6d1    
+    private Boolean isSkySat // Is this a skysat bucket for skysat specific stuff
+    private Boolean isPan //is this panchromatic
 
     /**
      * Constructor.
@@ -32,6 +35,7 @@ public class ProcessFilesProcessor implements Processor {
         this.omdKeyMapList = omdKeyMapList
         this.extensions = extensions
         this.logFile = new File("/${mount.bucket}/${mount.logFilePath}")
+        this.isSkySat = mount.bucket.contains("skysat")
     }
 
     /**
@@ -84,14 +88,19 @@ public class ProcessFilesProcessor implements Processor {
             if (extensions.contains(extension)) {
                 String prefix = path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))
                 def omdFilename = prefix + ".omd"
+                isPan = path.contains("panchromatic")
                 def postFilename = prefix + "." + extension
                 postFilename = "/${mount.bucket}/${this.processedDirectory}${postFilename}"
                 omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: postFilename])
+
+                createOMD(path, this.omdBody)
+                convertWithChipper(path)
+                exchange.in.setHeader("postFilename", postFilename)
             }
         }
 
         logProcess(size, scanner, this.id, relativePath, "/${mount.bucket}/${this.processedDirectory}")
-        logOmd(omdFiles)
+        // logOmd(omdFiles)
 
         ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/", overwrite:"false", granularity:"9223372036854") {
             fileset(dir:"${relativePath}/") {
@@ -113,6 +122,28 @@ public class ProcessFilesProcessor implements Processor {
             }
         }
 
+        if (this.isSkySat){
+            def skySatFilesByIdCount = new FileNameFinder().getFileNames("${relativePath}/", "${this.skySatId}*").size()
+
+            println "\n\n_____SKYSAT ID ${this.skySatId} FILES COUNT_______ = ${skySatFilesByIdCount}"
+
+            if (skySatFilesByIdCount == 0)
+            {       
+                println "\n\n_____CREATING MOSAIC READY"    
+                def readyFile = new File("/${mount.bucket}/${this.processedDirectory}/${this.skySatId}_mosaic.ready")     
+                if (isPan){
+                    readyFile = new File("/${mount.bucket}/${this.processedDirectory}/${this.skySatId}_panchromatic_mosaic.ready")
+                }
+                // println "mosaic file ${readyFile}"
+                // readyFile.createNewFile() 
+                exchange.in.setHeader("MosaicReady", "true")
+                exchange.in.setHeader("ReadyFile", readyFile.toString())
+            }
+            else{
+                exchange.in.setHeader("MosaicReady", "false")
+            }
+        }        
+
         exchange.in.setBody(omdFiles)
     }
 
@@ -133,8 +164,75 @@ public class ProcessFilesProcessor implements Processor {
 
         date = date.substring(0, 10)
         date = date.replaceAll("-","/")
-        return "${mount.archiveDirectory}/${date}/${this.id}"
+
+        def processDirectory = "${mount.archiveDirectory}/${date}/${this.id}"
+
+        if (this.isSkySat){
+            this.skySatId = this.id.find( /\d+_\d+_ssc\d+d\d+/ )
+            processDirectory =  "${mount.archiveDirectory}/${date}/${this.skySatId}"
+        }
+
+        return processDirectory
     }
+
+    private void createOMD(image, body){
+        def omdFile = new File(image.replace(".ntf", ".omd"))
+        logOmd(omdFile)
+        if (omdFile.exists()) {
+            println "omd already exists "
+            logOmdExists(omdFile)
+        } else {
+            println "writing omdFile"
+            omdFile.withWriter { writer ->
+                writer.write(body)
+            }
+        }
+    }
+
+    private void convertWithChipper(image){
+        if (this.isSkySat){
+            def outImage = new File(image.replace(".ntf", ".tif"))
+            if (outImage.exists())
+            {
+                //println "${outImage} already exists."
+                logExeError(outImage, "Image already exists", "Chipper Warning")
+            }
+            else {
+                def tifCommand = [
+                    "ossim-chipper",
+                    "--op", "ortho",
+                    image, 
+                    outImage
+                ]
+                // println tifCommand
+
+                def output = executeCommand( tifCommand)	
+                if (output.contains("Error"))
+                {
+                    logExeError(outImage, output, "Chipper Error")
+                }
+                else{
+                    logExe(outImage, output, "Chipper Complete")
+                }
+            }
+        }
+    }
+
+    private String executeCommand( command ) {
+        def process = command.execute()
+        def standardOut = new StringBuffer()
+        def standardError = new StringBuffer()
+        process.waitForProcessOutput( standardOut, standardError )
+        
+        if (standardError)
+        {
+
+            return "Error - ${standardError}"
+        }
+
+        return "Completed Successfully - ${standardOut}"
+    }
+
 
     /**
      * Create the string to populate the omd files relating to this set of images.
@@ -218,16 +316,54 @@ public class ProcessFilesProcessor implements Processor {
         logger.log()
     }
 
-    private void logOmd(omdFiles) {
-        String body = ""
-        for (f in omdFiles)
-            body += f.filename + "\n"
+    // private void logOmd(omdFiles) {
+    //     String body = ""
+    //     for (f in omdFiles)
+    //         body += f.filename + "\n"
+
+    //     Logger logger = new Logger("Processor", "ProcessFiles",
+    //                                "Creating omd files",
+    //                                "Omd files to create:",
+    //                                body, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
+
+    //     logger.log()
+    // }
+
+    private void logOmd(omdFile) {
 
         Logger logger = new Logger("Processor", "ProcessFiles",
-                                   "Creating omd files",
-                                   "Omd files to create:",
-                                   body, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
+                                   "Creating omd file",
+                                   "Omd file to create:",
+                                   omdFile.toString(), ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
 
         logger.log()
     }
+
+    private void logExeError(filename, error, subhead) {
+        String subtitle = "${subhead}: ${error}"
+        Logger logger = new Logger("Processor", "UnzipProcessor", 
+                                   subtitle, 
+                                   "Output File failure:", 
+                                   filename, ColorScheme.splitter, logFile, true, ConsoleColors.FILENAME)
+        logger.log()
+    }
+
+    private void logExe(filename, output, subhead) {
+        String subtitle = "${subhead}: ${output}"
+        Logger logger = new Logger("Processor", "UnzipProcessor", 
+                                   subtitle, 
+                                   "Output File created:", 
+                                   filename, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
+        logger.log()
+    } 
+
+    private void logOmdExists(filename) {
+        Logger logger = new Logger("Omd", "PostProcessor",
+                                   "Found duplicate omd file",
+                                   "Filename:",
+                                   filename, ColorScheme.splitter,
+                                   logFile, true, ConsoleColors.FILENAME)
+        logger.log()
+    }
+
 }

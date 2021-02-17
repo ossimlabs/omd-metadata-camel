@@ -60,7 +60,7 @@ podTemplate(
 {
 node(POD_LABEL){
     stage("Checkout branch") {
-        APP_NAME = PROJECT_URL.tokenize('/').last()
+        APP_NAME = "${PROJECT_URL}".tokenize('/').last()
         scmVars = checkout(scm)
         Date date = new Date()
         String currentDate = date.format("YYYY-MM-dd-HH-mm-ss")
@@ -134,19 +134,25 @@ node(POD_LABEL){
 //         }
 //     }
 
-    stage('Build') {
-        container('builder') {
-            sh """
-                ./gradlew assemble
-            """
+    stage("Build Docker Image") {
+      container('docker'){
+        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
+          withGradle {
+            script {
+                sh """
+                  apk add openjdk8
+                  ./gradlew jDB
+                """
+              }
+          }
         }
     }
 
-    stage('Docker Build') {
+    stage('Docker Tag') {
         container('docker') {
             withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
                 sh """
-                    docker build . -t ${DOCKER_IMAGE_PATH}:${TAG_NAME}
+                    docker tag ${DOCKER_IMAGE_PATH} ${DOCKER_IMAGE_PATH}:${TAG_NAME}
                 """
             }
         }
