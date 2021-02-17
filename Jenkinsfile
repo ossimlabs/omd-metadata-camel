@@ -147,6 +147,7 @@ node(POD_LABEL){
           }
         }
     }
+   }
 
     stage('Docker Tag') {
         container('docker') {
