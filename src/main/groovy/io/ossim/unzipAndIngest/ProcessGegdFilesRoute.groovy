@@ -66,7 +66,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     public void configure() throws Exception
     {
         CronScheduledRoutePolicy startPolicy = new CronScheduledRoutePolicy();
-        startPolicy.setRouteStartTime("* * 12-18 * * ?");
+        startPolicy.setRouteStartTime("* * 12-20 * * ?");
 
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
@@ -100,6 +100,9 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                 if (responseJson.totalFeatures == 0) {
                     println "-"*80
                     println "Image file found that has not been ingested: \nfilepath: " + filename
+                    println ""
+                    println "URL:   " + url
+                    println ""
                     println "- "*40
 
                     exchange.in.setHeader("CamelFileName", filename)
