@@ -190,28 +190,30 @@ public class ProcessFilesProcessor implements Processor {
     }
 
     private void convertWithChipper(image){
-        def outImage = new File(image.replace(".ntf", ".tif"))
-        if (outImage.exists())
-        {
-            //println "${outImage} already exists."
-            logExeError(outImage, "Image already exists", "Chipper Warning")
-        }
-        else {
-            def tifCommand = [
-                "ossim-chipper",
-                "--op", "ortho",
-                image, 
-                outImage
-            ]
-            // println tifCommand
-
-            def output = executeCommand( tifCommand)	
-            if (output.contains("Error"))
+        if (isSkySat){
+            def outImage = new File(image.replace(".ntf", ".tif"))
+            if (outImage.exists())
             {
-                logExeError(outImage, output, "Chipper Error")
+                //println "${outImage} already exists."
+                logExeError(outImage, "Image already exists", "Chipper Warning")
             }
-            else{
-                logExe(outImage, output, "Chipper Complete")
+            else {
+                def tifCommand = [
+                    "ossim-chipper",
+                    "--op", "ortho",
+                    image, 
+                    outImage
+                ]
+                // println tifCommand
+
+                def output = executeCommand( tifCommand)	
+                if (output.contains("Error"))
+                {
+                    logExeError(outImage, output, "Chipper Error")
+                }
+                else{
+                    logExe(outImage, output, "Chipper Complete")
+                }
             }
         }
     }
