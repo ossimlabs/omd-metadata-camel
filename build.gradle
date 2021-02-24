@@ -83,9 +83,6 @@ jib {
     }
     containerizingMode = 'packaged'
     container {
-        // Run as userid 1001 added so entrypoint doesn't run as root user.
-        // Userid 1001 is common for other Omar applications and NFS mounts.
-        user = '1001:1001'
         environment = [
             JAVA_APP_DIR: '/app', 
             JAVA_MAIN_CLASS: mainClassName,
