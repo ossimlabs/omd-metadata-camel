@@ -66,7 +66,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     public void configure() throws Exception
     {
         CronScheduledRoutePolicy startPolicy = new CronScheduledRoutePolicy();
-        startPolicy.setRouteStartTime("* * 12-20 * * ?");
+        startPolicy.setRouteStartTime("* * * * * ?");
 
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
