@@ -152,7 +152,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 3. Merge omd filenames and file bodies into a map and split for processing.
         // 3. Create an omd file in the processed directory.
         // 4. Send post
-        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
+        from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&noop=true")
             .filter(header("CamelFileName").endsWith("metadata.json"))
             .process(processFilesProcessor)
             .choice()
