@@ -136,8 +136,8 @@ public class MosaicProcessor implements Processor {
         println "Creating mosaic ${ outImage }..."
         
         def mosaicCommand = [
-            "ossim-mosaic",
-            "-m", "FEATHER",
+            "ossim-chipper",
+            "--op", "ortho",
             images.join( " " ),
             outImage
         ]
