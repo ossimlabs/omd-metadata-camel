@@ -100,7 +100,7 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 1. Grab zip files stored in the mounted buckets and ingest directory.
         // 2. Unzip the files into a unique, unzipped directory.
         // 3. Created a done file inside that same directory.
-        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true&scheduler=quartz&scheduler.cron=*+*+4-10+?+*+*")
+        from("file:///${mount.bucket}/${mount.ingestDirectory}/?maxMessagesPerPoll=1&noop=true")
             .filter(header("CamelFileName").endsWith(".zip"))
             .process(unzipProcessor)
             .choice()
