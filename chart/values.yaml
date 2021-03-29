@@ -12,10 +12,6 @@ appName: unzip-and-ingest
 
 global:
   dockerRepository: nexus-docker-public-hosted.ossim.io
-  imagePullSecret:
-    registry: null
-    username: null
-    password: null
   hostname: omar-dev.ossim.io
 
   createIngress: true
@@ -32,9 +28,8 @@ global:
   useSpringConfigServer: false
 
 image:
-  name: null
-  tag: null
-  pullPolicy: null
+  name: unzip-and-ingest
+  pullPolicy: Always
 
 internalPort: 8080
 externalPort: 8080
