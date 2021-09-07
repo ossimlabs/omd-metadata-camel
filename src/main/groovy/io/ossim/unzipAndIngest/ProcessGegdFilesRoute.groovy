@@ -62,11 +62,15 @@ class ProcessGegdFilesRoute extends RouteBuilder {
     @Value('${app.fileExtensions}')
     String[] extensions
 
+    @Value('${app.parsing.ingestPeriod}')
+    String ingestPeriod
+
     @Override
     public void configure() throws Exception
     {
         CronScheduledRoutePolicy startPolicy = new CronScheduledRoutePolicy();
-        startPolicy.setRouteStartTime("* * 12-20 * * ?");
+        //startPolicy.setRouteStartTime("* * 12-20 * * ?");
+        startPolicy.setRouteStartTime(ingestPeriod);
 
         bindToRegistry('client', AmazonSQSClientBuilder.defaultClient())
 
