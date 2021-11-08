@@ -20,7 +20,7 @@ data:
           suffix: "&background=true&buildThumbnails=true&buildOverviews=true&buildHistograms=true&buildHistogramsWithR0=true&useFastHistogramStaging=false&overviewType=ossim_tiff_box&overviewCompressionType=NONE&thumbnailSize=512&thumbnailType=jpeg&thumbnailStretchType=auto-minmax"
       mounts: {{- include "unzip-and-ingest.mountBuckets" . | indent 8 }}
       parsing:
-        ingestPeriod: "* * 12-20 * * ?"
+        ingestPeriod: {{ .Values.ingestPeriod }}
         dateKeys:
           - acquisitionDate
           - acquired

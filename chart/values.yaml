@@ -29,7 +29,7 @@ global:
 
 image:
   name: unzip-and-ingest
-  tag: 1.2.6
+  tag: 1.2.5
   pullPolicy: Always
 
 internalPort: 8080

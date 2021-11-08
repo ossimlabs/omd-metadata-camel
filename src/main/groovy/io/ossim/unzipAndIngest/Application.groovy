@@ -29,7 +29,7 @@ class Application {
         context.addRoutes(processGegdFilesRoute)
         context.start();
         Logger.printCamelTitleScreen()
-        println "Hello again world..."
+        println "Hello again world... "
     }
 
     static void main(String[] args) {
