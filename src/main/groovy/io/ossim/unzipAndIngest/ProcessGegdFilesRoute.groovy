@@ -129,6 +129,14 @@ class ProcessGegdFilesRoute extends RouteBuilder {
                 .end()
     }
 
+    public static class CustomFilter {
+        public boolean shouldProcess(Exchange exchange) {
+            def filepath = exchange.in.getHeaders().CamelFileName
+            def filename = filepath.substring(filepath.lastIndexOf("/")+1,filepath.length())
+            return filename.contains("_")
+        }
+    }
+
     private void doRoute(Map mount) {
         mount.logFilePath = this.logFilePath
         File logFile = new File("/${mount.bucket}/${mount.logFilePath}")
@@ -162,52 +170,64 @@ class ProcessGegdFilesRoute extends RouteBuilder {
         // 4. Send post
         from("file:///${mount.bucket}/${mount.unzipDirectory}/?maxMessagesPerPoll=1&recursive=true&doneFileName=done&noop=true")
             .routePolicy(startPolicy).noAutoStartup()
-            .filter(header("CamelFileName").endsWith("metadata.json"))
+            .filter().method(new CustomFilter(), "shouldProcess")
             .process(processFilesProcessor)
-            .choice()
-                .when(header("MosaicReady").isEqualTo("true"))
-                    .process(mosaicProcessor)
+            .filter(header("postFilename").isNotEqualTo("Do Not Process"))
+//            .choice()
+//                .when(header("MosaicReady").isEqualTo("true"))
+//                    .process(mosaicProcessor)
+//                    .process(postProcessor)
+//                    .setBody(constant(null))
+//                    .doTry()
+//                        .to("http://oldhost")
+//                        .process { exchange ->
+//                            Logger logger = new Logger("HTTP", "Response",
+//                                                        "http response from omar-stager",
+//                                                        "Response body:",
+//                                                        exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
+//                            logger.log()
+//                        }
+//                    .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
+//                        .process { exchange ->
+//                            final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
+//                            Logger logger = new Logger("ERROR", "HTTP",
+//                                                        "Error caught when sending POST to omar-stager",
+//                                                        "Error:",
+//                                                        errMessage, ColorScheme.error, logFile, true)
+//                            logger.log()
+//                        }
+//                    .end()
+//                .when(body().contains("BlackSky"))
                     .process(postProcessor)
                     .setBody(constant(null))
                     .doTry()
                         .to("http://oldhost")
                         .process { exchange ->
-                            Logger logger = new Logger("HTTP", "Response",
-                                                        "http response from omar-stager",
-                                                        "Response body:",
-                                                        exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
-                            // logger.log()
+                                Logger logger = new Logger("HTTP", "Response",
+                                        "http response from omar-stager",
+                                        "Response body:",
+                                        exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
+                                logger.log()
                         }
                     .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
                         .process { exchange ->
-                            final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
-                            Logger logger = new Logger("ERROR", "HTTP",
-                                                        "Error caught when sending POST to omar-stager",
-                                                        "Error:",
-                                                        ex.getMessage(), ColorScheme.error, logFile, true)
-                            logger.log()
-                        }
-                    .end()
-                .when(body().contains("BlackSky"))
-                    .process(postProcessor)
-                    .setBody(constant(null))
-                    .doTry()
-                        .to("http://oldhost")
-                        .process { exchange ->
-                            Logger logger = new Logger("HTTP", "Response",
-                                                        "http response from omar-stager",
-                                                        "Response body:",
-                                                        exchange.in.getBody(String.class), ColorScheme.http, logFile, true)
-                            // logger.log()
-                        }
-                    .doCatch(org.apache.camel.http.common.HttpOperationFailedException.class)
-                        .process { exchange ->
-                            final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
-                            Logger logger = new Logger("ERROR", "HTTP",
-                                                        "Error caught when sending POST to omar-stager",
-                                                        "Error:",
-                                                        ex.getMessage(), ColorScheme.error, logFile, true)
-                            logger.log()
+                                final Throwable ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class)
+                                def errMessage = ex.getMessage()
+                                Logger logger = new Logger("ERROR", "HTTP",
+                                        "Error caught when sending POST to omar-stager",
+                                        "Error:",
+                                        errMessage, ColorScheme.error, logFile, true)
+                                logger.log()
+                                def today = new Date().format("yyyy-MM-dd_HH_mm_ss")
+                                def filePath = exchange.in.getHeaders().CamelFileAbsolutePath
+                                def startIndex = filePath.lastIndexOf("/");
+                                startIndex = startIndex == -1 ? 0 : startIndex + 1;
+                                def filename = filePath.substring(startIndex, filePath.length());
+                                filename = filename.substring(0, filename.lastIndexOf("_"));
+
+                                println "Attempting to post file: " + filename
+                                def newFile = new File("/${mount.bucket}/failed-omar-post/${filename}_${today}.txt")
+                                newFile.append(errMessage)
                         }
                     .end()
             .end()

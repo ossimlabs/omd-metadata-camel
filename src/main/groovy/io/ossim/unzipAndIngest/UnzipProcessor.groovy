@@ -53,7 +53,7 @@ public class UnzipProcessor implements Processor {
 
         def scanner = ant.fileScanner {
             fileset(dir:"/${mount.bucket}/${mount.unzipDirectory}/${prefixDir}/") {
-                include(name:"**/*metadata.json")
+                include(name:"**/*.ntf")
             }
         }
         def prefix = "/${mount.bucket}/${mount.unzipDirectory}/"
