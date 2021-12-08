@@ -13,17 +13,17 @@ build:
 #    manifests:
 #    - k8s-prod.yml
 
-deploy:
-  helm:
-    releases:
-      - name: unzip-and-ingest
-        chartPath: chart
-        valuesFiles:
-          - chart/values.yaml
-        # This override is used to pass skaffold's rebuilt image to
-        # imageName in the helm chart deployment.yaml.
-        # If you want to use an existing image rather than skaffold's
-        # comment this out and specify the image in the values-dev.yaml
-        artifactOverrides:
-          imageSkaffoldOverride: nexus-docker-private-hosted.ossim.io/unzip-and-ingest
+#deploy:
+#  helm:
+#    releases:
+#      - name: unzip-and-ingest
+#        chartPath: chart
+#        valuesFiles:
+#          - chart/values.yaml
+#        # This override is used to pass skaffold's rebuilt image to
+#        # imageName in the helm chart deployment.yaml.
+#        # If you want to use an existing image rather than skaffold's
+#        # comment this out and specify the image in the values-dev.yaml
+#        artifactOverrides:
+#          imageSkaffoldOverride: nexus-docker-private-hosted.ossim.io/unzip-and-ingest
 

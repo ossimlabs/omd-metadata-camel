@@ -32,14 +32,13 @@ public class PostProcessor implements Processor {
      * image file for posting inside the same directory.
      */
     public void process(Exchange exchange) throws Exception {
-        def header = exchange.in.getHeaders()        
-        String url = this.urlPrefix + header.postFilename + this.urlSuffix
+        def header = exchange.in.getHeaders()
+            String url = this.urlPrefix + header.postFilename + this.urlSuffix
+            logProcess(header.postFilename)
+            exchange.in.setHeader(Exchange.HTTP_URI, url)
+            exchange.in.setHeader("CamelHttpMethod", "POST")
 
-        logProcess(header.postFilename)
-        exchange.in.setHeader(Exchange.HTTP_URI, url)
-        exchange.in.setHeader("CamelHttpMethod", "POST")
-
-        logHttp(url)
+            logHttp(url)
     }
 
     /**

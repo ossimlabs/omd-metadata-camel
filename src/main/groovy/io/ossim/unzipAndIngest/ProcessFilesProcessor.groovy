@@ -44,9 +44,9 @@ public class ProcessFilesProcessor implements Processor {
      * @param exchange The exchange containing the metadata.json file passed into this process
      */
     public void process(Exchange exchange) throws Exception {
-        def json = new JsonSlurper().parseText(exchange.in.getBody(String.class))
-        initialize(json)
-        moveFilesAndSetOmdExchange(exchange, json)
+        //def json = new JsonSlurper().parseText(exchange.in.getBody(String.class))
+        //initialize(json)
+        moveFilesAndSetOmdExchange(exchange)
     }
 
     /**
@@ -61,64 +61,75 @@ public class ProcessFilesProcessor implements Processor {
     }
 
     /**
+     * Create the processed directory based on the json in the metadata file.
+     *
+     * @param json Json from the metadata.json file
+     * @return String that is the processed directory
+     */
+
+    private void setProcessedDirectory(filePath) {
+        def dateStr = getDateStr(filePath)
+        def start = filePath.lastIndexOf("/")+1
+        def date = dateStr.substring(0, 4) + "/" + dateStr.substring(4, 6) + "/" + dateStr.substring(6, dateStr.length())
+        def processedDirectory = "${mount.archiveDirectory}/${date}/${filePath.substring(start, filePath.indexOf("_", start))}"
+
+        this.processedDirectory = processedDirectory
+    }
+
+    private String getDateStr(filePath) {
+        def fileSubStr = filePath.substring(filePath.lastIndexOf("/")+1, filePath.length())
+        def strArr = fileSubStr.split("-")
+        def dateStr = strArr[2] // 20211019
+
+        return dateStr
+    }
+    /**
      * Moves unzipped files into processed directory and creates needed omd files.
      *
      * @param exchange The exchange passed into this process
      * @param json Json object from the metadata.json file
      */
-    private void moveFilesAndSetOmdExchange(exchange, json) {
+    private void moveFilesAndSetOmdExchange(exchange) {
         ArrayList<Map> omdFiles = new ArrayList<>()
-        def filePath =  exchange.in.getHeaders().CamelFileAbsolutePath
-        def relativePath = filePath.substring(0, filePath.lastIndexOf("/"))
-        def scanner = ant.fileScanner {
-            fileset(dir:"${relativePath}/") {
-                include(name:"**/${this.id}*")
-            }
+        def path =  exchange.in.getHeaders().CamelFileAbsolutePath
+        def relativePath = path.substring(0, path.lastIndexOf("/"))
+        String fileName = path.substring(path.lastIndexOf("/")+1, path.length())
+        setProcessedDirectory(path)
+
+        def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
+        if (extensions.contains(extension)) {
+            String prefix = path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))
+            String omdBody = getOmdFileBodyString(path.substring(path.lastIndexOf("/")+1, path.length()))
+            def omdFilename = prefix + ".omd"
+            isPan = path.contains("panchromatic")
+            def postFilename = prefix + "." + extension
+            postFilename = "/${mount.bucket}/${this.processedDirectory}${postFilename}"
+            omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: omdBody, postFilename: postFilename])
+
+            createOMD(path, omdBody)
+            convertWithChipper(path)
+            exchange.in.setHeader("postFilename", postFilename)
+        }else{
+            exchange.in.setHeader("postFilename", "Do Not Process")
         }
 
-        def overwriteScanner = ant.fileScanner {
-            fileset(dir:"/${mount.bucket}/${this.processedDirectory}/") { }
-        }
-
-        int size = 0
-        for (f in scanner) {
-            size++
-            def path = f.getAbsolutePath()
-            def extension = path.substring(path.lastIndexOf(".") + 1, path.length())
-            if (extensions.contains(extension)) {
-                String prefix = path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))
-                def omdFilename = prefix + ".omd"
-                isPan = path.contains("panchromatic")
-                def postFilename = prefix + "." + extension
-                postFilename = "/${mount.bucket}/${this.processedDirectory}${postFilename}"
-                omdFiles.add([filename: "${this.processedDirectory}${omdFilename}", body: this.omdBody, postFilename: postFilename])
-
-                createOMD(path, this.omdBody)
-                convertWithChipper(path)
-                exchange.in.setHeader("postFilename", postFilename)
-            }
-        }
-
-        logProcess(size, scanner, this.id, relativePath, "/${mount.bucket}/${this.processedDirectory}")
-        // logOmd(omdFiles)
-
+        logProcess(fileName, relativePath, "/${mount.bucket}/${this.processedDirectory}")
         ant.move(todir:"/${mount.bucket}/${this.processedDirectory}/", overwrite:"false", granularity:"9223372036854") {
             fileset(dir:"${relativePath}/") {
-                include(name:"${this.id}*")
+                include(name:"${fileName}")
             }
         }
 
         ant.chmod(perm:"777", type:"file") {
             fileset(dir:"/${mount.bucket}/${this.processedDirectory}/") {
-                include(name:"${this.id}*")
+                include(name:"${fileName}")
             }
-
             dirset(dir:"/${mount.bucket}/${this.processedDirectory}") {}
         }
 
         ant.delete() {
             fileset(dir:"${relativePath}/") {
-                include(name:"${this.id}*")
+                include(name:"${fileName}")
             }
         }
 
@@ -145,34 +156,6 @@ public class ProcessFilesProcessor implements Processor {
         }        
 
         exchange.in.setBody(omdFiles)
-    }
-
-    /**
-     * Create the processed directory based on the json in the metadata file.
-     *
-     * @param json Json from the metadata.json file
-     * @return String that is the processed directory
-     */
-    private String getProcessedDirectory(json) {
-        String date = ''
-
-        for (int i = 0; i < dateKeys.length; i++) {
-            date = findKeyValue(json, dateKeys[i])
-            if (date != null)
-                break
-        }
-
-        date = date.substring(0, 10)
-        date = date.replaceAll("-","/")
-
-        def processDirectory = "${mount.archiveDirectory}/${date}/${this.id}"
-
-        if (this.isSkySat){
-            this.skySatId = this.id.find( /\d+_\d+_ssc\d+d\d+/ )
-            processDirectory =  "${mount.archiveDirectory}/${date}/${this.skySatId}"
-        }
-
-        return processDirectory
     }
 
     private void createOMD(image, body){
@@ -241,15 +224,25 @@ public class ProcessFilesProcessor implements Processor {
      * @param omdKeyMapList
      * @return String to populate the omd files
      */
-    private String getOmdFileBodyString(json, omdKeyMapList) {
+//    private String getOmdFileBodyString(json, omdKeyMapList) {
+//        String fileBodyString = ''
+//        for ( map in omdKeyMapList ) {
+//            def pair = findKeyValuePairFromList(json, map.oldKeys)
+//            if (pair != null) {
+//                String keyVal = getChangedNamingCase(pair.value, map.values)
+//                fileBodyString += map.key + ": " + keyVal + "\n"
+//            }
+//        }
+//        return fileBodyString
+//    }
+
+    private String getOmdFileBodyString(fileName) {
         String fileBodyString = ''
-        for ( map in omdKeyMapList ) {
-            def pair = findKeyValuePairFromList(json, map.oldKeys)
-            if (pair != null) {
-                String keyVal = getChangedNamingCase(pair.value, map.values)
-                fileBodyString += map.key + ": " + keyVal + "\n"
-            }
-        }
+        String id = fileName.split("_")[0]
+        // String dateStr = getDateStr(fileName)
+        //def date = dateStr.substring(0, 4) + "/" + dateStr.substring(4, 6) + "/" + dateStr.substring(6, dateStr.length())
+        fileBodyString = "mission_id: " + id
+
         return fileBodyString
     }
 
@@ -303,16 +296,12 @@ public class ProcessFilesProcessor implements Processor {
         return null
     }
 
-    private void logProcess(size, scanner, id, from, to) {
-        String body = ""
-        for (f in scanner)
-            body += f.getAbsolutePath().split("/").last() + "\n"
-
+    private void logProcess(fileName, from, to) {
+        String body = fileName
         Logger logger = new Logger("Processor", "ProcessFiles",
-                                   "Found metadata file for processing",
-                                   "Copying ${size} files with image_id: ${id} from ${from} to ${to}:",
+                                   "Found file for processing",
+                                   "Copying: ${fileName} from ${from} to ${to}:",
                                    body, ColorScheme.route, logFile, true, ConsoleColors.FILENAME)
-
         logger.log()
     }
 
